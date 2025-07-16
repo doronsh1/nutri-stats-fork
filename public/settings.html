@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Diary - Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/components/navbar.css">
+    <link rel="stylesheet" href="/css/pages/settings.css">
+</head>
+<body>
+    <div class="header-section">
+        <div class="stats-container">
+            <h4 class="mb-3">Calculated Values</h4>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div>Basal Metabolic Rate</div>
+                    <div class="stat-value"><span id="bmrValue">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <div>Total Daily Calories</div>
+                    <div class="stat-value"><span id="totalCalories">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <div>Weekly Calories</div>
+                    <div class="stat-value"><span id="weeklyCalories">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-container">
+        <div class="settings-card">
+            <h2 class="mb-4">Profile Settings</h2>
+            <form id="userSettingsForm">
+                <!-- Personal Information Section -->
+                <div class="settings-section mb-4">
+                    <h5 class="settings-section-title">Personal Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="userName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="userName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="sex">Sex</label>
+                                <select class="form-control" id="sex" required>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Physical Measurements Section -->
+                <div class="settings-section mb-4">
+                    <h5 class="settings-section-title">Physical Measurements</h5>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label" for="unitSystem">Unit System</label>
+                                <select class="form-control" id="unitSystem" required>
+                                    <option value="metric">Metric (kg, cm)</option>
+                                    <option value="imperial">Imperial (lb, in)</option>
+                                </select>
+                                <small class="form-text text-muted">Choose your preferred measurement system</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="age">Age</label>
+                                <input type="number" class="form-control" id="age" min="1" max="120" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="weight">Weight</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" class="form-control" id="weight" required>
+                                    <span class="input-group-text unit-weight">kg</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="height">Height</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" class="form-control" id="height" required>
+                                    <span class="input-group-text unit-height">cm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity & Goals Section -->
+                <div class="settings-section mb-4">
+                    <h5 class="settings-section-title">Activity & Goals</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="activityLevel">Activity Level</label>
+                                <select class="form-control" id="activityLevel" required>
+                                    <option value="1.2">Little to no exercise</option>
+                                    <option value="1.375">Light exercise (1-3 days/week)</option>
+                                    <option value="1.55">Moderate exercise (3-5 days/week)</option>
+                                    <option value="1.725">Heavy exercise (6-7 days/week)</option>
+                                    <option value="1.9">Very heavy exercise (2x/day)</option>
+                                </select>
+                                <small class="form-text text-muted">Select the option that best matches your typical weekly activity</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="calorieAdjustment">Daily Calorie Adjustment</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="calorieAdjustment" value="0">
+                                    <span class="input-group-text">kcal</span>
+                                </div>
+                                <small class="form-text text-muted">Adjust your daily calorie target (+ to increase, - to decrease)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meal Planning Section -->
+                <div class="settings-section mb-4">
+                    <h5 class="settings-section-title">Meal Planning</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="mealInterval">Hours Between Meals</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.5" min="1" max="6" class="form-control" id="mealInterval" required>
+                                    <span class="input-group-text">hours</span>
+                                </div>
+                                <small class="form-text text-muted">Recommended: 2-4 hours between meals</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary" id="saveSettings">
+                        <i class="bi bi-save me-2"></i>Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/components/navbar.js"></script>
+    <script src="js/pages/settings.js"></script>
+</body>
+</html> 

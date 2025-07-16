@@ -1,0 +1,71 @@
+{
+  "meals": [
+    {
+      "id": 1,
+      "time": "10:00",
+      "items": [
+        {
+          "name": "חלבון JYM",
+          "amount": 43,
+          "baseAmount": 43,
+          "calories": 170,
+          "carbs": 8,
+          "protein": 24,
+          "fat": 4,
+          "proteinG": 0,
+          "baseCalories": 170,
+          "baseCarbs": 8,
+          "baseProtein": 24,
+          "baseFat": 4,
+          "baseProteinG": 0,
+          "id": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "time": "13:30",
+      "items": []
+    },
+    {
+      "id": 3,
+      "time": "17:00",
+      "items": []
+    },
+    {
+      "id": 4,
+      "time": "20:30",
+      "items": [
+        {
+          "name": "חלבון JYM",
+          "amount": 43,
+          "baseAmount": 43,
+          "calories": 170,
+          "carbs": 8,
+          "protein": 24,
+          "fat": 4,
+          "proteinG": 0,
+          "baseCalories": 170,
+          "baseCarbs": 8,
+          "baseProtein": 24,
+          "baseFat": 4,
+          "baseProteinG": 0,
+          "id": 1
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "time": "00:00",
+      "items": []
+    },
+    {
+      "id": 6,
+      "time": "03:30",
+      "items": []
+    }
+  ],
+  "proteinLevel": 1.9,
+  "fatLevel": 0.8,
+  "calorieAdjustment": 0
+}
