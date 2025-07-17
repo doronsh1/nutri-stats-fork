@@ -1,5 +1,49 @@
 /* Foods Page Styles */
 
+/* Override common button styling for foods page - use blue to match settings */
+.btn-primary {
+    background-color: var(--primary-blue, #1a73e8) !important;
+    background-image: none !important;
+    border: 1px solid var(--primary-blue, #1a73e8) !important;
+    color: white !important;
+    padding: 12px 24px;
+    border-radius: var(--border-radius, 8px);
+    font-weight: var(--font-weight-semibold, 600);
+    transition: var(--transition-fast, all 0.2s ease);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-md, 0 2px 4px rgba(0,0,0,0.08));
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-blue-dark, #1557b0) !important;
+    background-image: none !important;
+    border-color: var(--primary-blue-dark, #1557b0) !important;
+    color: white !important;
+    box-shadow: var(--shadow-lg, 0 4px 8px rgba(0,0,0,0.12));
+    transform: translateY(-1px);
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 0 0.2rem var(--primary-blue-light, rgba(26, 115, 232, 0.25)) !important;
+}
+
+/* Override modal save button styling */
+.modal-footer .btn-primary {
+    background-color: var(--primary-blue, #1a73e8) !important;
+    background-image: none !important;
+    border-color: var(--primary-blue, #1a73e8) !important;
+    color: white !important;
+}
+
+.modal-footer .btn-primary:hover {
+    background-color: var(--primary-blue-dark, #1557b0) !important;
+    background-image: none !important;
+    border-color: var(--primary-blue-dark, #1557b0) !important;
+    color: white !important;
+}
+
 .rtl-text { 
     direction: rtl; 
     text-align: right; 

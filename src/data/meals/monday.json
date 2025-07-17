@@ -3,24 +3,7 @@
     {
       "id": 1,
       "time": "10:00",
-      "items": [
-        {
-          "name": "חלבון JYM",
-          "amount": 43,
-          "baseAmount": 43,
-          "calories": 170,
-          "carbs": 8,
-          "protein": 24,
-          "fat": 4,
-          "proteinG": 0,
-          "baseCalories": 170,
-          "baseCarbs": 8,
-          "baseProtein": 24,
-          "baseFat": 4,
-          "baseProteinG": 0,
-          "id": 1
-        }
-      ]
+      "items": []
     },
     {
       "id": 2,
@@ -35,24 +18,7 @@
     {
       "id": 4,
       "time": "20:30",
-      "items": [
-        {
-          "name": "חלבון JYM",
-          "amount": 43,
-          "baseAmount": 43,
-          "calories": 170,
-          "carbs": 8,
-          "protein": 24,
-          "fat": 4,
-          "proteinG": 0,
-          "baseCalories": 170,
-          "baseCarbs": 8,
-          "baseProtein": 24,
-          "baseFat": 4,
-          "baseProteinG": 0,
-          "id": 1
-        }
-      ]
+      "items": []
     },
     {
       "id": 5,

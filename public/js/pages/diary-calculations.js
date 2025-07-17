@@ -95,14 +95,19 @@ function updateHeaderStats() {
     // Sum up all meal totals
     tables.forEach(table => {
         const totalCells = table.querySelectorAll('tfoot td');
-        if (totalCells.length >= 7) {
-            totals.calories += parseFloat(totalCells[2].textContent) || 0;
-            totals.carbs += parseFloat(totalCells[3].textContent) || 0;
-            totals.protein += parseFloat(totalCells[4].textContent) || 0;
-            totals.fat += parseFloat(totalCells[5].textContent) || 0;
-            totals.proteinG += parseFloat(totalCells[6].textContent) || 0;
+        if (totalCells.length >= 6) {
+            totals.calories += parseFloat(totalCells[1].textContent) || 0;
+            totals.carbs += parseFloat(totalCells[2].textContent) || 0;
+            totals.protein += parseFloat(totalCells[3].textContent) || 0;
+            totals.fat += parseFloat(totalCells[4].textContent) || 0;
+            totals.proteinG += parseFloat(totalCells[5].textContent) || 0;
         }
     });
+
+    // Calculate protein values
+    const proteinFromMealTables = totals.protein; // Protein column is already in grams, not calories
+    const totalProteinIncludingG = proteinFromMealTables + totals.proteinG; // Total protein including Protein G column
+    const totalProteinExcludingG = proteinFromMealTables; // Only protein from main protein column, excluding Protein G
 
     // Get target values from the first row
     const proteinLevel = parseFloat(document.getElementById('proteinLevelInput').value) || 0;
@@ -116,13 +121,23 @@ function updateHeaderStats() {
     const targetCarbG = remainingCalories / 4;
 
     // Calculate actual percentages based on consumed calories
-    const actualProteinPercentage = totals.calories > 0 ? (totals.protein / totals.calories) * 100 : 0;
-    const actualFatPercentage = totals.calories > 0 ? (totals.fat / totals.calories) * 100 : 0;
-    const actualCarbPercentage = totals.calories > 0 ? (totals.carbs / totals.calories) * 100 : 0;
+    const actualProteinCalories = totals.protein * 4; // Convert protein grams to calories
+    const actualFatCalories = totals.fat * 9; // Convert fat grams to calories
+    const actualCarbCalories = totals.carbs * 4; // Convert carb grams to calories
+    
+    const actualProteinPercentage = totals.calories > 0 ? (actualProteinCalories / totals.calories) * 100 : 0;
+    const actualFatPercentage = totals.calories > 0 ? (actualFatCalories / totals.calories) * 100 : 0;
+    const actualCarbPercentage = totals.calories > 0 ? (actualCarbCalories / totals.calories) * 100 : 0;
 
     // Calculate actual protein level (g per kg body weight)
     const actualProteinLevel = userWeight > 0 ? totals.proteinG / userWeight : 0;
-    const actualFatLevel = userWeight > 0 ? (totals.fat / 9) / userWeight : 0; // Convert fat calories to grams, then to g/kg
+    const actualFatLevel = userWeight > 0 ? totals.fat / userWeight : 0; // Fat is already in grams, not calories
+
+    // Keep first row protein grams as single value (target protein)
+    const proteinGramsElement = document.getElementById('proteinGrams');
+    if (proteinGramsElement) {
+        proteinGramsElement.textContent = Math.round(targetProteinG);
+    }
 
     // Update second row elements
     const mealProteinLevel = document.getElementById('mealProteinLevel');
@@ -140,15 +155,15 @@ function updateHeaderStats() {
 
     if (mealProteinLevel) mealProteinLevel.textContent = actualProteinLevel.toFixed(1);
     if (mealProteinPercentage) mealProteinPercentage.textContent = actualProteinPercentage.toFixed(1);
-    if (mealProtein) mealProtein.textContent = totals.proteinG.toFixed(1);
-    if (mealProteinCal) mealProteinCal.textContent = totals.protein.toFixed(1);
+    if (mealProtein) mealProtein.textContent = `${totalProteinIncludingG.toFixed(1)} / ${totalProteinExcludingG.toFixed(1)}`;
+    if (mealProteinCal) mealProteinCal.textContent = actualProteinCalories.toFixed(1); // Display protein calories
     if (mealFatLevel) mealFatLevel.textContent = actualFatLevel.toFixed(1);
     if (mealFatPercentage) mealFatPercentage.textContent = actualFatPercentage.toFixed(1);
-    if (mealFat) mealFat.textContent = (totals.fat / 9).toFixed(1); // Convert calories to grams
-    if (mealFatCal) mealFatCal.textContent = totals.fat.toFixed(1);
+    if (mealFat) mealFat.textContent = totals.fat.toFixed(1); // Fat is already in grams, not calories
+    if (mealFatCal) mealFatCal.textContent = actualFatCalories.toFixed(1); // Display fat calories
     if (mealCarbPercentage) mealCarbPercentage.textContent = actualCarbPercentage.toFixed(1);
-    if (mealCarb) mealCarb.textContent = (totals.carbs / 4).toFixed(1); // Convert calories to grams
-    if (mealCarbCal) mealCarbCal.textContent = totals.carbs.toFixed(1);
+    if (mealCarb) mealCarb.textContent = totals.carbs.toFixed(1); // Carbs are already in grams, not calories
+    if (mealCarbCal) mealCarbCal.textContent = actualCarbCalories.toFixed(1); // Display carb calories
     if (mealGoal) {
         mealGoal.textContent = totals.calories.toFixed(1);
         

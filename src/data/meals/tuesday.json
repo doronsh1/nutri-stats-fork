@@ -6,62 +6,12 @@
     {
       "id": 1,
       "time": "09:00",
-      "items": [
-        {
-          "name": "חלבון",
-          "amount": 713,
-          "baseAmount": 600,
-          "calories": 2852,
-          "carbs": 0,
-          "protein": 713,
-          "fat": 0,
-          "proteinG": 0,
-          "baseCalories": 2400,
-          "baseCarbs": 0,
-          "baseProtein": 600,
-          "baseFat": 0,
-          "baseProteinG": 0,
-          "id": 1
-        },
-        {
-          "name": "אורז לבן מבושל",
-          "amount": 100,
-          "baseAmount": 100,
-          "calories": 123,
-          "carbs": 27,
-          "protein": 0,
-          "fat": 0.9,
-          "proteinG": 2.8,
-          "baseCalories": 123,
-          "baseCarbs": 27,
-          "baseProtein": 0,
-          "baseFat": 0.9,
-          "baseProteinG": 2.8,
-          "id": 2
-        }
-      ]
+      "items": []
     },
     {
       "id": 2,
       "time": "12:30",
-      "items": [
-        {
-          "name": "חלבון JYM",
-          "amount": 43,
-          "baseAmount": 43,
-          "calories": 170,
-          "carbs": 8,
-          "protein": 24,
-          "fat": 4,
-          "proteinG": 0,
-          "baseCalories": 170,
-          "baseCarbs": 8,
-          "baseProtein": 24,
-          "baseFat": 4,
-          "baseProteinG": 0,
-          "id": 1
-        }
-      ]
+      "items": []
     },
     {
       "id": 3,
@@ -76,24 +26,7 @@
     {
       "id": 5,
       "time": "23:00",
-      "items": [
-        {
-          "name": "אורז לבן מבושל",
-          "amount": 100,
-          "baseAmount": 100,
-          "calories": 123,
-          "carbs": 27,
-          "protein": 0,
-          "fat": 0.9,
-          "proteinG": 2.8,
-          "baseCalories": 123,
-          "baseCarbs": 27,
-          "baseProtein": 0,
-          "baseFat": 0.9,
-          "baseProteinG": 2.8,
-          "id": 1
-        }
-      ]
+      "items": []
     },
     {
       "id": 6,

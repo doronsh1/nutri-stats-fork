@@ -6,94 +6,12 @@
     {
       "id": 1,
       "time": "9:00",
-      "items": [
-        {
-          "name": "גו יוגורט -פירות יער",
-          "amount": 200,
-          "baseAmount": 200,
-          "calories": 109,
-          "carbs": 7,
-          "protein": 20,
-          "fat": 0,
-          "proteinG": 0,
-          "baseCalories": 109,
-          "baseCarbs": 7,
-          "baseProtein": 20,
-          "baseFat": 0,
-          "baseProteinG": 0,
-          "id": 1
-        },
-        {
-          "name": "בייגלה - שמניות עם מלח",
-          "amount": 60,
-          "baseAmount": 25,
-          "calories": 229.2,
-          "carbs": 44.4,
-          "protein": 0,
-          "fat": 2.4,
-          "proteinG": 6.7,
-          "baseCalories": 95.5,
-          "baseCarbs": 18.5,
-          "baseProtein": 0,
-          "baseFat": 1,
-          "baseProteinG": 2.8,
-          "id": 2
-        },
-        {
-          "name": "חמאת בוטנים כפית",
-          "amount": 15,
-          "baseAmount": 8,
-          "calories": 90,
-          "carbs": 0,
-          "protein": 0,
-          "fat": 7.5,
-          "proteinG": 4.3,
-          "baseCalories": 48,
-          "baseCarbs": 0,
-          "baseProtein": 0,
-          "baseFat": 4,
-          "baseProteinG": 2.3,
-          "id": 5
-        },
-        {
-          "name": "תמר",
-          "amount": 10,
-          "baseAmount": 17,
-          "calories": 27.6,
-          "carbs": 7.6,
-          "protein": 0,
-          "fat": 0,
-          "proteinG": 0,
-          "baseCalories": 47,
-          "baseCarbs": 13,
-          "baseProtein": 0,
-          "baseFat": 0,
-          "baseProteinG": 0,
-          "id": 6
-        }
-      ]
+      "items": []
     },
     {
       "id": 2,
       "time": "12:30",
-      "items": [
-        {
-          "name": "MetRX - Peanut Pretzel",
-          "amount": 100,
-          "baseAmount": 100,
-          "calories": 410,
-          "carbs": 47,
-          "protein": 30,
-          "fat": 12,
-          "proteinG": 0,
-          "baseCalories": 410,
-          "baseCarbs": 47,
-          "baseProtein": 30,
-          "baseFat": 12,
-          "baseProteinG": 0,
-          "id": 1
-        }
-      ]
+      "items": []
     },
     {
       "id": 3,

@@ -1,0 +1,200 @@
+/* Reports Page Specific Styles */
+
+/* Page title styling */
+h1 {
+    color: var(--gray-dark, #333);
+    font-weight: var(--font-weight-semibold, 600);
+    margin-bottom: 2rem !important;
+}
+
+/* Reports specific container */
+.main-container {
+    max-width: var(--container-max-width, 1200px);
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* Chart containers specific to reports */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    padding: 20px 0;
+}
+
+.chart-container canvas {
+    max-height: 400px !important;
+}
+
+/* Achievement Stats Styling - Dynamic performance-based colors */
+.achievement-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: var(--gray-light, #f8f9fa);
+    border-radius: var(--border-radius, 8px);
+    border: 1px solid var(--gray-border, #dee2e6);
+    transition: var(--transition-smooth, all 0.3s ease);
+    border-left: 4px solid var(--gray-border, #dee2e6);
+}
+
+/* Performance-based color classes */
+.stat-item.excellent {
+    background-color: var(--success-green-bg, #d4edda);
+    border-left-color: var(--success-green, #28a745);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.1);
+}
+
+.stat-item.good {
+    background-color: var(--warning-yellow-bg, #fff3cd);
+    border-left-color: var(--warning-yellow, #ffc107);
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.1);
+}
+
+.stat-item.needs-improvement {
+    background-color: var(--danger-red-bg, #f8d7da);
+    border-left-color: var(--danger-red, #dc3545);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.1);
+}
+
+.stat-item.neutral {
+    background-color: #e2e3e5;
+    border-left-color: var(--gray-medium, #6c757d);
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.1);
+}
+
+/* Enhanced hover effects for performance stats */
+.stat-item.excellent:hover {
+    background-color: #c3e6cb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.15);
+}
+
+.stat-item.good:hover {
+    background-color: #ffeeba;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.15);
+}
+
+.stat-item.needs-improvement:hover {
+    background-color: #f5c6cb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.15);
+}
+
+.stat-item.neutral:hover {
+    background-color: #d6d8db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.15);
+}
+
+.stat-item .label {
+    font-weight: var(--font-weight-medium, 500);
+    color: var(--gray-dark, #495057);
+}
+
+.stat-item .value {
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--gray-dark, #333);
+    font-size: 1.1rem;
+}
+
+/* Value text colors based on performance */
+.stat-item.excellent .value {
+    color: #155724;
+}
+
+.stat-item.good .value {
+    color: #856404;
+}
+
+.stat-item.needs-improvement .value {
+    color: #721c24;
+}
+
+.stat-item.neutral .value {
+    color: var(--gray-dark, #495057);
+}
+
+/* Table Styling - Match diary style */
+.table {
+    font-size: 0.9rem;
+}
+
+.table th {
+    background-color: var(--gray-light, #f8f9fa);
+    border-bottom: 2px solid var(--gray-border, #dee2e6);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--gray-dark, #495057);
+    padding: 12px 8px;
+}
+
+.table td {
+    padding: 10px 8px;
+    vertical-align: middle;
+    border-color: var(--gray-border, #dee2e6);
+}
+
+/* Status badges in table */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: var(--border-radius-small, 6px);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold, 600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-excellent {
+    background-color: var(--success-green-bg, #d4edda);
+    color: #155724;
+    border: 1px solid var(--success-green, #28a745);
+}
+
+.status-good {
+    background-color: var(--warning-yellow-bg, #fff3cd);
+    color: #856404;
+    border: 1px solid var(--warning-yellow, #ffc107);
+}
+
+.status-needs-improvement {
+    background-color: var(--danger-red-bg, #f8d7da);
+    color: #721c24;
+    border: 1px solid var(--danger-red, #dc3545);
+}
+
+/* Reports page responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+        padding: 15px 0;
+    }
+
+    .chart-container canvas {
+        max-height: 300px !important;
+    }
+
+    .stat-item {
+        padding: 10px;
+    }
+
+    .stat-item .value {
+        font-size: 1rem;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+
+    .status-badge {
+        padding: 3px 6px;
+        font-size: 0.7rem;
+    }
+} 

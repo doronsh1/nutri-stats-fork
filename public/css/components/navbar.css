@@ -1,6 +1,8 @@
+/* Navigation Component Styles */
+
 .nav-container {
-    background-color: white;
-    border-bottom: 1px solid #e0e0e0;
+    background-color: var(--background-white, white);
+    border-bottom: 1px solid var(--gray-border-light, #e0e0e0);
     flex-shrink: 0;
 }
 
@@ -22,15 +24,16 @@
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
+    transition: var(--transition-fast, all 0.2s ease);
 }
 
 .nav-tabs .nav-link.active {
-    color: #1a73e8;
-    border-bottom: 2px solid #1a73e8;
+    color: var(--primary-blue, #1a73e8);
+    border-bottom: 2px solid var(--primary-blue, #1a73e8);
     background: transparent;
 }
 
 .nav-tabs .nav-link:hover:not(.active) {
-    color: #333;
-    border-bottom: 2px solid #e0e0e0;
+    color: var(--gray-dark, #333);
+    border-bottom: 2px solid var(--gray-border-light, #e0e0e0);
 } 
