@@ -146,20 +146,12 @@ class UserSettings {
         }
 
         try {
-            const response = await fetch('/api/settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    bmr: parseFloat(this.bmrValue.textContent),
-                    totalCalories: parseFloat(this.totalCalories.textContent),
-                    weeklyCalories: parseFloat(this.weeklyCalories.textContent)
-                })
+            await API.settings.save({
+                ...formData,
+                bmr: parseFloat(this.bmrValue.textContent),
+                totalCalories: parseFloat(this.totalCalories.textContent),
+                weeklyCalories: parseFloat(this.weeklyCalories.textContent)
             });
-
-            if (!response.ok) throw new Error('Failed to save settings');
             
             // Update username display after successful save
             this.updateUserDisplay(formData.userName);
@@ -180,9 +172,7 @@ class UserSettings {
 
     async loadSettings() {
         try {
-            const response = await fetch('/api/settings');
-            if (!response.ok) throw new Error('Failed to load settings');
-            
+            const response = await API.settings.get();
             const settings = await response.json();
             this.populateForm(settings);
             this.updateUnitLabels();

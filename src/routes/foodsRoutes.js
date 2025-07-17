@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const { requireAuth } = require('../middleware/auth');
 
-// Update the path to be relative to the project root
+// Shared foods database - accessible to all authenticated users
 const FOODS_FILE = path.join(__dirname, '..', 'data', 'foods', 'foods.json');
 
 // Debug logging
@@ -43,8 +44,8 @@ async function writeFoodsFile(data) {
     }
 }
 
-// Get all foods
-router.get('/', async (req, res) => {
+// Get all foods - requires authentication, shared database
+router.get('/', requireAuth, async (req, res) => {
     console.log('Handling GET request for /api/foods');
     try {
         const data = await readFoodsFile();
@@ -55,8 +56,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Add new food
-router.post('/', async (req, res) => {
+// Add new food - requires authentication, shared database
+router.post('/', requireAuth, async (req, res) => {
     try {
         const data = await readFoodsFile();
         data.foods.push(req.body);
@@ -67,8 +68,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update food
-router.put('/:index', async (req, res) => {
+// Update food - requires authentication, shared database
+router.put('/:index', requireAuth, async (req, res) => {
     try {
         const index = parseInt(req.params.index);
         const data = await readFoodsFile();
@@ -85,8 +86,8 @@ router.put('/:index', async (req, res) => {
     }
 });
 
-// Delete food
-router.delete('/:index', async (req, res) => {
+// Delete food - requires authentication, shared database
+router.delete('/:index', requireAuth, async (req, res) => {
     try {
         const index = parseInt(req.params.index);
         const data = await readFoodsFile();

@@ -17,8 +17,8 @@ class NavigationBar {
             // Set active state for current page
             this.setActiveLink();
 
-            // Load user display
-            this.loadUserDisplay();
+            // Load authentication state and user display
+            this.loadAuthenticatedUser();
         } catch (error) {
             console.error('Error loading navbar:', error);
         }
@@ -34,19 +34,62 @@ class NavigationBar {
         });
     }
 
-    async loadUserDisplay() {
+    async loadAuthenticatedUser() {
         try {
-            const response = await fetch('/api/settings');
-            if (!response.ok) throw new Error('Failed to load settings');
-            const settings = await response.json();
-            
-            const userDisplay = document.getElementById('userDisplay');
-            if (userDisplay && settings.userName) {
-                userDisplay.textContent = settings.userName;
-            }
+            // Check if user is authenticated
+            const authResponse = await API.auth.me();
+            const authData = await authResponse.json();
+            this.showAuthenticatedUser(authData.user);
+            this.setupLogoutHandler();
         } catch (error) {
-            console.error('Error loading user display:', error);
+            // Only log errors and redirect on protected pages
+            if (!isPublicPage()) {
+                console.error('Error checking authentication:', error);
+                this.redirectToLogin();
+            }
+            this.showLoginPrompt();
         }
+    }
+
+    showAuthenticatedUser(user) {
+        const userMenu = document.getElementById('userMenu');
+        const loginPrompt = document.getElementById('loginPrompt');
+        const userName = document.getElementById('userName');
+
+        if (userMenu) userMenu.style.display = 'flex';
+        if (loginPrompt) loginPrompt.style.display = 'none';
+        if (userName) userName.textContent = user.name;
+    }
+
+    showLoginPrompt() {
+        const userMenu = document.getElementById('userMenu');
+        const loginPrompt = document.getElementById('loginPrompt');
+
+        if (userMenu) userMenu.style.display = 'none';
+        if (loginPrompt) loginPrompt.style.display = 'block';
+    }
+
+    setupLogoutHandler() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await API.auth.logout();
+                    // Redirect to login page after successful logout
+                    window.location.href = '/login.html';
+        } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Logout failed. Please try again.');
+                }
+            });
+        }
+    }
+
+    redirectToLogin() {
+        // Small delay to prevent immediate redirect flashing
+        setTimeout(() => {
+            window.location.href = '/login.html';
+        }, 100);
     }
 }
 

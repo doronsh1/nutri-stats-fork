@@ -33,8 +33,7 @@ const MACRO_COLORS = {
 // Load settings when the page loads
 async function loadSettings() {
     try {
-        const response = await fetch('/api/settings');
-        if (!response.ok) throw new Error('Failed to load settings');
+        const response = await API.settings.get();
         const settings = await response.json();
         mealInterval = settings.mealInterval || 3;
         userWeight = settings.weight || 70;
@@ -92,22 +91,11 @@ async function saveMacroSettings() {
         const dayName = days[currentDate.getDay()];
 
         // Save all macro settings together
-        const saveResponse = await fetch(`/api/daily-meals/${dayName}/macros`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+        await API.meals.saveMacros(dayName, {
                 proteinLevel,
                 fatLevel,
                 calorieAdjustment
-            })
         });
-
-        if (!saveResponse.ok) {
-            const errorData = await saveResponse.json();
-            throw new Error(errorData.message || 'Failed to save macro settings');
-        }
     } catch (error) {
         console.error('Error saving macro settings:', error);
         showError(error.message || 'Failed to save macro settings');
@@ -143,8 +131,7 @@ async function loadMeals() {
     try {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = days[currentDate.getDay()];
-        const response = await fetch(`/api/daily-meals/${dayName}`);
-        if (!response.ok) throw new Error('Failed to fetch meals');
+        const response = await API.meals.get(dayName);
         const data = await response.json();
         
         // Update protein and fat level inputs from daily data
@@ -193,8 +180,7 @@ async function loadMeals() {
 async function updateAllMealTimes(firstMealTime) {
     try {
         // Get current meal interval from settings
-        const response = await fetch('/api/settings');
-        if (!response.ok) throw new Error('Failed to load settings');
+        const response = await API.settings.get();
         const settings = await response.json();
         const interval = settings.mealInterval || 3;
 
@@ -244,15 +230,7 @@ async function saveMealTime(mealId, newTime) {
     try {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = days[currentDate.getDay()];
-        const response = await fetch(`/api/daily-meals/${dayName}/meals/${mealId}/time`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ time: newTime })
-        });
-
-        if (!response.ok) throw new Error('Failed to update meal time');
+        await API.meals.updateMealTime(dayName, mealId, newTime);
     } catch (error) {
         console.error('Error saving meal time:', error);
         showError('Failed to save meal time');
@@ -278,9 +256,7 @@ async function saveMealData(row) {
             // If this row had an ID, we need to delete it
             const itemId = row.dataset.itemId;
             if (itemId) {
-                await fetch(`/api/daily-meals/${dayName}/meals/${mealId}/items/${itemId}`, {
-                    method: 'DELETE'
-                });
+                await API.meals.deleteItem(dayName, mealId, itemId);
                 delete row.dataset.itemId;
             }
         return;
@@ -302,30 +278,19 @@ async function saveMealData(row) {
             baseProteinG: parseFloat(nutritionalDivs[4]?.getAttribute('data-base-value')) || parseFloat(nutritionalDivs[4]?.textContent) || 0
         };
 
-        let response;
         const itemId = row.dataset.itemId;
+        let savedItem;
 
         if (itemId) {
             // Update existing item
-            response = await fetch(`/api/daily-meals/${dayName}/meals/${mealId}/items/${itemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(itemData)
-            });
+            const response = await API.meals.updateItem(dayName, mealId, itemId, itemData);
+            savedItem = await response.json();
         } else {
             // Create new item
-            response = await fetch(`/api/daily-meals/${dayName}/meals/${mealId}/items`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(itemData)
-        });
-        }
-
-        if (!response.ok) {
-            throw new Error('Failed to save meal data');
+            const response = await API.meals.addItem(dayName, mealId, itemData);
+            savedItem = await response.json();
         }
         
-        const savedItem = await response.json();
         // Update the row's item ID
         row.dataset.itemId = savedItem.id;
 

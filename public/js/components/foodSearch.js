@@ -7,10 +7,7 @@ class FoodSearch {
 
     async loadFoods() {
         try {
-            const response = await fetch('/api/foods');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            const response = await API.foods.getAll();
             const data = await response.json();
             this.foods = Array.isArray(data) ? data : (data.foods || []);
         } catch (error) {

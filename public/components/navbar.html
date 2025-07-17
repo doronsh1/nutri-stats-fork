@@ -25,7 +25,22 @@
             </a>
         </li>
         <li class="nav-item ms-auto">
-            <span class="nav-link" id="userDisplay"></span>
+            <div class="user-menu" id="userMenu" style="display: none;">
+                <span class="nav-link user-info">
+                    <i class="bi bi-person-circle"></i>
+                    <span id="userName">Loading...</span>
+                </span>
+                <button class="btn btn-sm btn-outline-primary ms-2" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </button>
+            </div>
+            <div class="login-prompt" id="loginPrompt" style="display: none;">
+                <a href="/login.html" class="nav-link">
+                    <i class="bi bi-person"></i>
+                    Login
+                </a>
+            </div>
         </li>
     </ul>
 </nav> 

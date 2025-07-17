@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const { requireAuth, getUserSettingsPath, ensureUserDataDirectory } = require('../middleware/auth');
 
-const SETTINGS_FILE = path.join(__dirname, '..', 'data', 'settings.json');
+// Legacy settings file for backward compatibility during transition
+const LEGACY_SETTINGS_FILE = path.join(__dirname, '..', 'data', 'settings.json');
 
 // Ensure the data directory exists
 async function ensureDataDirectory() {
@@ -15,10 +17,10 @@ async function ensureDataDirectory() {
     }
 }
 
-// Initialize settings file if it doesn't exist
-async function initializeSettingsFile() {
+// Initialize user-specific settings file if it doesn't exist
+async function initializeUserSettingsFile(userSettingsFile) {
     try {
-        await fs.access(SETTINGS_FILE);
+        await fs.access(userSettingsFile);
     } catch {
         const defaultSettings = {
             unitSystem: 'metric',
@@ -33,27 +35,55 @@ async function initializeSettingsFile() {
             totalCalories: 0,
             weeklyCalories: 0
         };
-        await fs.writeFile(SETTINGS_FILE, JSON.stringify(defaultSettings, null, 2));
+        await fs.writeFile(userSettingsFile, JSON.stringify(defaultSettings, null, 2));
     }
 }
 
-// Get user settings
-router.get('/', async (req, res) => {
+// Legacy function for backward compatibility
+async function initializeSettingsFile() {
     try {
-        await ensureDataDirectory();
-        await initializeSettingsFile();
-        const data = await fs.readFile(SETTINGS_FILE, 'utf8');
+        await fs.access(LEGACY_SETTINGS_FILE);
+    } catch {
+        const defaultSettings = {
+            unitSystem: 'metric',
+            sex: 'male',
+            age: 30,
+            weight: 70,
+            height: 170,
+            activityLevel: '1.55',
+            calorieAdjustment: 0,
+            mealInterval: 3,
+            bmr: 0,
+            totalCalories: 0,
+            weeklyCalories: 0
+        };
+        await fs.writeFile(LEGACY_SETTINGS_FILE, JSON.stringify(defaultSettings, null, 2));
+    }
+}
+
+// Get user settings - user-specific with authentication
+router.get('/', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        await ensureUserDataDirectory(userId);
+        
+        const userSettingsFile = getUserSettingsPath(userId);
+        await initializeUserSettingsFile(userSettingsFile);
+        
+        const data = await fs.readFile(userSettingsFile, 'utf8');
         res.json(JSON.parse(data));
     } catch (error) {
-        console.error('Error reading settings:', error);
+        console.error('Error reading user settings:', error);
         res.status(500).json({ error: 'Failed to read settings' });
     }
 });
 
-// Update user settings
-router.post('/', async (req, res) => {
+// Update user settings - user-specific with authentication
+router.post('/', requireAuth, async (req, res) => {
     try {
-        await ensureDataDirectory();
+        const userId = req.user.id;
+        await ensureUserDataDirectory(userId);
+        
         const settings = req.body;
         
         // Validate required fields
@@ -80,10 +110,11 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: 'Meal interval must be between 1 and 6 hours' });
         }
 
-        await fs.writeFile(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+        const userSettingsFile = getUserSettingsPath(userId);
+        await fs.writeFile(userSettingsFile, JSON.stringify(settings, null, 2));
         res.json({ message: 'Settings saved successfully' });
     } catch (error) {
-        console.error('Error saving settings:', error);
+        console.error('Error saving user settings:', error);
         res.status(500).json({ error: 'Failed to save settings' });
     }
 });

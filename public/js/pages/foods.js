@@ -13,12 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load user settings
     async function loadUserSettings() {
         try {
-            const response = await fetch('/api/settings');
-            if (response.ok) {
+            const response = await API.settings.get();
                 const settings = await response.json();
                 unitSystem = settings.unitSystem || 'metric';
                 updateUnitLabels();
-            }
         } catch (error) {
             console.error('Error loading settings:', error);
         }
@@ -35,10 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load foods from server
     async function loadFoods() {
         try {
-            const response = await fetch('/api/foods');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            const response = await API.foods.getAll();
             const data = await response.json();
             // Ensure we're getting the foods array from the response
             foods = Array.isArray(data) ? data : (data.foods || []);
@@ -181,20 +176,9 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         try {
-            const response = await fetch('/api/foods', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newFood)
-            });
-
-            if (response.ok) {
+            await API.foods.add(newFood);
                 addFoodForm.reset();
                 await loadFoods();
-            } else {
-                throw new Error('Failed to add food');
-            }
         } catch (error) {
             console.error('Error adding food:', error);
             alert('Error adding new food. Please try again.');
@@ -273,15 +257,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Could not find food item to delete');
             }
 
-            const response = await fetch(`/api/foods/${originalIndex}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
+            await API.foods.delete(originalIndex);
                 await loadFoods(); // This will maintain the search filter
-            } else {
-                throw new Error('Failed to delete food');
-            }
         } catch (error) {
             console.error('Error deleting food:', error);
             alert('Error deleting food. Please try again.');
@@ -323,19 +300,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         try {
-            const response = await fetch(`/api/foods/${originalIndex}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedFood)
-            });
-
-            if (response.ok) {
+            await API.foods.update(originalIndex, updatedFood);
                 await loadFoods(); // This will maintain the search filter
-            } else {
-                throw new Error('Failed to update food');
-            }
         } catch (error) {
             console.error('Error updating food:', error);
             alert('Error updating food. Please try again.');

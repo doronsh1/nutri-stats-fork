@@ -114,6 +114,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/utils/apiUtils.js"></script>
     <script src="/js/components/navbar.js"></script>
     <script src="/js/components/foodSearch.js"></script>
     <script>
@@ -145,6 +146,9 @@
         // Start observing the meals container for new rows
         const mealsContainer = document.getElementById('mealsContainer');
         observer.observe(mealsContainer, { childList: true, subtree: true });
+        
+        // Initialize authentication check
+        initializeAuth();
     </script>
 </body>
 </html>

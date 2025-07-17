@@ -1,0 +1,13 @@
+{
+  "unitSystem": "metric",
+  "sex": "male",
+  "age": 30,
+  "weight": 70,
+  "height": 170,
+  "activityLevel": "1.55",
+  "calorieAdjustment": 0,
+  "mealInterval": 3,
+  "bmr": 0,
+  "totalCalories": 0,
+  "weeklyCalories": 0
+}
