@@ -143,12 +143,6 @@ body {
     min-height: 28px;
 }
 
-/* Smaller text for second row meal stats to fit dual format numbers */
-.meal-stats-grid .stat-value {
-    font-size: 0.95rem;
-    line-height: 1.1;
-}
-
 .stat-card input {
     font-size: 1.1rem;
     padding: 0;
