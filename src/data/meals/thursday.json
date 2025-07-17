@@ -6,7 +6,72 @@
     {
       "id": 1,
       "time": "09:00",
-      "items": []
+      "items": [
+        {
+          "name": "חלבון",
+          "amount": 150,
+          "baseAmount": 100,
+          "calories": 600,
+          "carbs": 0,
+          "protein": 150,
+          "fat": 0,
+          "proteinG": 0,
+          "baseCalories": 400,
+          "baseCarbs": 0,
+          "baseProtein": 100,
+          "baseFat": 0,
+          "baseProteinG": 0,
+          "id": 1
+        },
+        {
+          "name": "חלבון גי",
+          "amount": 150,
+          "baseAmount": 100,
+          "calories": 600,
+          "carbs": 0,
+          "protein": 0,
+          "fat": 0,
+          "proteinG": 150,
+          "baseCalories": 400,
+          "baseCarbs": 0,
+          "baseProtein": 0,
+          "baseFat": 0,
+          "baseProteinG": 100,
+          "id": 2
+        },
+        {
+          "name": "פחמימה",
+          "amount": 150,
+          "baseAmount": 100,
+          "calories": 600,
+          "carbs": 150,
+          "protein": 0,
+          "fat": 0,
+          "proteinG": 0,
+          "baseCalories": 400,
+          "baseCarbs": 100,
+          "baseProtein": 0,
+          "baseFat": 0,
+          "baseProteinG": 0,
+          "id": 3
+        },
+        {
+          "name": "שומן",
+          "amount": 100,
+          "baseAmount": 100,
+          "calories": 900,
+          "carbs": 0,
+          "protein": 0,
+          "fat": 100,
+          "proteinG": 0,
+          "baseCalories": 900,
+          "baseCarbs": 0,
+          "baseProtein": 0,
+          "baseFat": 100,
+          "baseProteinG": 0,
+          "id": 4
+        }
+      ]
     },
     {
       "id": 2,
@@ -21,7 +86,24 @@
     {
       "id": 4,
       "time": "19:30",
-      "items": []
+      "items": [
+        {
+          "name": "אורז לבן מבושל",
+          "amount": 102.2,
+          "baseAmount": 100,
+          "calories": 125.7,
+          "carbs": 27.6,
+          "protein": 0,
+          "fat": 0.9,
+          "proteinG": 2.9,
+          "baseCalories": 123,
+          "baseCarbs": 27,
+          "baseProtein": 0,
+          "baseFat": 0.9,
+          "baseProteinG": 2.8,
+          "id": 1
+        }
+      ]
     },
     {
       "id": 5,
