@@ -126,11 +126,11 @@ class UserSettings {
 
     setSaveButtonState(saved) {
         if (saved) {
-            this.saveButton.textContent = 'Saved ✓';
+            this.saveButton.innerHTML = '<i class="bi bi-check-circle me-2"></i>Saved';
             this.saveButton.classList.remove('btn-primary');
             this.saveButton.classList.add('btn-success');
         } else {
-            this.saveButton.textContent = 'Save Settings';
+            this.saveButton.innerHTML = '<i class="bi bi-save me-2"></i>Save Settings';
             this.saveButton.classList.remove('btn-success');
             this.saveButton.classList.add('btn-primary');
         }

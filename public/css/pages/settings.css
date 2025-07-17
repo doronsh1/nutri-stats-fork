@@ -18,6 +18,25 @@
     align-items: center;
     gap: 8px;
     box-shadow: var(--shadow-md, 0 2px 4px rgba(0,0,0,0.08));
+    min-width: 140px;
+    justify-content: center;
+}
+
+.btn-success {
+    background-color: #198754 !important;
+    background-image: none !important;
+    border: 1px solid #198754 !important;
+    color: white !important;
+    padding: 12px 24px;
+    border-radius: var(--border-radius, 8px);
+    font-weight: var(--font-weight-semibold, 600);
+    transition: var(--transition-fast, all 0.2s ease);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-md, 0 2px 4px rgba(0,0,0,0.08));
+    min-width: 140px;
+    justify-content: center;
 }
 
 .btn-primary:hover {
