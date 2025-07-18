@@ -381,7 +381,7 @@ function createFoodItemRow(item) {
                 <input type="number" 
                        value="${item.amount || ''}" 
                        placeholder="${weightUnit}" 
-                       step="0.1" 
+                       step="1" 
                        min="0"
                        class="amount-input"
                        data-base-amount="${item.baseAmount || item.amount || ''}">
