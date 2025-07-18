@@ -5,7 +5,7 @@ function createStatCards() {
         console.error('Stats container not found');
         return;
     }
-    
+
     // Get the current weight unit based on the user's unit system preference
     const weightUnit = isMetricSystem ? 'g' : 'lb';
 
@@ -19,17 +19,17 @@ function createStatCards() {
     const actualValuesRow = document.createElement('div');
     actualValuesRow.className = 'stats-grid meal-stats-grid';
     actualValuesRow.style.marginTop = '10px';
-    
+
     // Create cards array to match the layout of the first row
     const cards = Array(13).fill(null);
-    
+
     // Protein Level
     cards[0] = `
         <div class="stat-card protein-section">
             <div style="min-height: 0; padding: 0; border: none;"></div>
             <div id="mealProteinLevel" class="stat-value" style="background-color: ${MACRO_COLORS.protein.background}; border: 1px solid ${MACRO_COLORS.protein.border};">0.0</div>
         </div>`;
-    
+
     // Protein stats
     cards[1] = `
         <div class="stat-card protein-section">
@@ -46,14 +46,14 @@ function createStatCards() {
             <div style="min-height: 0; padding: 0; border: none;"></div>
             <div id="mealProteinCal" class="stat-value" style="background-color: ${MACRO_COLORS.protein.background}; border: 1px solid ${MACRO_COLORS.protein.border};">0.0</div>
         </div>`;
-    
+
     // Fat Level
     cards[4] = `
         <div class="stat-card fat-section">
             <div style="min-height: 0; padding: 0; border: none;"></div>
             <div id="mealFatLevel" class="stat-value" style="background-color: ${MACRO_COLORS.fat.background}; border: 1px solid ${MACRO_COLORS.fat.border};">0.0</div>
         </div>`;
-    
+
     // Fat stats
     cards[5] = `
         <div class="stat-card fat-section">
@@ -70,7 +70,7 @@ function createStatCards() {
             <div style="min-height: 0; padding: 0; border: none;"></div>
             <div id="mealFatCal" class="stat-value" style="background-color: ${MACRO_COLORS.fat.background}; border: 1px solid ${MACRO_COLORS.fat.border};">0.0</div>
         </div>`;
-    
+
     // Carb stats
     cards[8] = `
         <div class="stat-card carb-section">
@@ -87,17 +87,17 @@ function createStatCards() {
             <div style="min-height: 0; padding: 0; border: none;"></div>
             <div id="mealCarbCal" class="stat-value" style="background-color: ${MACRO_COLORS.carb.background}; border: 1px solid ${MACRO_COLORS.carb.border};">0.0</div>
         </div>`;
-    
+
     // Manual change card position (11) is left empty and hidden
     cards[11] = '<div class="stat-card" style="visibility: hidden;"></div>';
-    
+
     // Goal card - second row
     cards[12] = `
         <div class="stat-card goal-section">
             <div style="min-height: 0; padding: 0; border: none;"></div>
             <div id="mealGoal" class="stat-value" style="transition: background-color 0.3s">0.0</div>
         </div>`;
-    
+
     // Set the row's HTML
     actualValuesRow.innerHTML = cards.join('');
 
@@ -133,7 +133,7 @@ function createMealSection(meal) {
 
     const header = document.createElement('div');
     header.className = 'meal-header';
-    
+
     // Create time input group
     const timeGroup = document.createElement('div');
     timeGroup.className = 'd-flex align-items-center';
@@ -150,11 +150,11 @@ function createMealSection(meal) {
 
     header.appendChild(timeGroup);
     section.appendChild(header);
-    
+
     // Add event listener for meal time input if this is meal 1
     if (meal.id === 1) {
         const timeInput = timeGroup.querySelector('.meal-time');
-        timeInput.addEventListener('change', function() {
+        timeInput.addEventListener('change', function () {
             updateAllMealTimes(this.value);
         });
     }
@@ -228,11 +228,11 @@ function setupTableEventListeners(table) {
         checkRowsAndUpdate(tbody);
     });
 
-    observer.observe(tbody, { 
-        childList: true, 
-        subtree: true, 
+    observer.observe(tbody, {
+        childList: true,
+        subtree: true,
         characterData: true,
-        attributes: true 
+        attributes: true
     });
 
     // Set up food search for all rows
@@ -248,19 +248,19 @@ function setupRowEventListeners(input) {
     if (input && typeof foodSearch !== 'undefined') {
         foodSearch.setupSearchInput(input);
     }
-    
+
     // Add input event listener to clear values when item name is deleted
-    input.addEventListener('input', async function() {
+    input.addEventListener('input', async function () {
         if (!this.value.trim()) {
             const row = this.closest('tr');
             clearRowValues(row);
             await saveMealData(row);
             checkRowsAndUpdate(row.parentElement);
-            }
+        }
     });
 
     // Add blur event
-    input.addEventListener('blur', async function() {
+    input.addEventListener('blur', async function () {
         if (!this.value.trim()) {
             const row = this.closest('tr');
             clearRowValues(row);
@@ -275,9 +275,9 @@ function setupRowEventListeners(input) {
 
 function setupAmountInputEventListener(amountInput) {
     if (!amountInput) return;
-    
+
     const tbody = amountInput.closest('tbody');
-    amountInput.addEventListener('change', async function() {
+    amountInput.addEventListener('change', async function () {
         const row = this.closest('tr');
         await handleAmountChange(this);
         checkRowsAndUpdate(tbody);
@@ -301,20 +301,20 @@ function clearRowValues(row) {
 function checkRowsAndUpdate(tbody) {
     const rows = tbody.querySelectorAll('tr');
     const minRows = 6;
-    
+
     // Count filled rows (rows with food items)
     let filledRows = 0;
     let emptyRows = 0;
     let lastEmptyRows = 0;
-    
+
     rows.forEach(row => {
         const foodInput = row.querySelector('.food-search-input');
         const isEmpty = !foodInput || !foodInput.value.trim();
-        
+
         if (!isEmpty) {
             filledRows++;
             lastEmptyRows = 0;
-            } else {
+        } else {
             emptyRows++;
             lastEmptyRows++;
         }
@@ -328,25 +328,25 @@ function checkRowsAndUpdate(tbody) {
         setupRowEventListeners(newRowElement.querySelector('.food-search-input'));
         setupAmountInputEventListener(newRowElement.querySelector('input[type="number"]'));
     }
-    
+
     // Remove last row if last two rows are empty and we have more than minimum rows
     if (lastEmptyRows >= 2 && rows.length > minRows) {
         tbody.removeChild(tbody.lastElementChild);
-            }
+    }
 }
 
 async function handleAmountChange(input) {
     const row = input.closest('tr');
     const foodInput = row.querySelector('.food-search-input');
-    
+
     // Get base values from the nutritional divs
     const nutritionalDivs = row.querySelectorAll('.nutritional-value');
     const newAmount = parseFloat(input.value) || 0;
     const baseAmount = parseFloat(input.getAttribute('data-base-amount')) || 0;
-    
+
     if (baseAmount > 0 && newAmount >= 0) {
         const ratio = newAmount / baseAmount;
-        
+
         nutritionalDivs.forEach((div, index) => {
             const baseValue = parseFloat(div.getAttribute('data-base-value')) || 0;
             if (baseValue > 0) {
@@ -357,12 +357,15 @@ async function handleAmountChange(input) {
     } else {
         nutritionalDivs.forEach(div => div.textContent = '');
     }
-    
+
     updateRowTotals(input);
     await saveMealData(row);
 }
 
 function createFoodItemRow(item) {
+    // Get the current weight unit based on the user's unit system preference
+    const weightUnit = isMetricSystem ? 'g' : 'lb';
+
     return `
         <tr class="meal-row" ${item.id ? `data-item-id="${item.id}"` : ''}>
             <td class="food-search-cell" style="text-align: center;">
@@ -377,7 +380,7 @@ function createFoodItemRow(item) {
             <td style="text-align: center;">
                 <input type="number" 
                        value="${item.amount || ''}" 
-                       placeholder="g" 
+                       placeholder="${weightUnit}" 
                        step="0.1" 
                        min="0"
                        class="amount-input"
