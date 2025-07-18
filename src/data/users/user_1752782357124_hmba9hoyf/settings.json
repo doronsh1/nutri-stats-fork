@@ -4,11 +4,11 @@
   "sex": "male",
   "age": 45,
   "weight": 106.9,
-  "height": 190,
+  "height": 170,
   "activityLevel": "1.375",
   "calorieAdjustment": -161,
   "mealInterval": 3.5,
-  "bmr": 2177,
-  "totalCalories": 2832,
-  "weeklyCalories": 19825
+  "bmr": 2081,
+  "totalCalories": 2700,
+  "weeklyCalories": 18901
 }
