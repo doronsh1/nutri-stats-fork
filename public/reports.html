@@ -14,75 +14,223 @@
 <body>
     <!-- Navigation will be loaded dynamically -->
     
-
-
     <div class="main-section">
-        <div class="container mt-5">
-            <!-- Weekly Nutrition Summary Report -->
-            <div class="report-content active" id="weekly-report">
-                <div class="row mb-4">
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-bar-chart"></i> Weekly Calorie Achievement</h5>
+        <div class="container mt-3">
+            <!-- Report Tabs Navigation -->
+            <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="nutrition-tab" data-bs-toggle="tab" data-bs-target="#nutrition-panel" type="button" role="tab" aria-controls="nutrition-panel" aria-selected="true">
+                        <i class="bi bi-bar-chart-fill"></i> Nutrition Report
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="weight-tab" data-bs-toggle="tab" data-bs-target="#weight-panel" type="button" role="tab" aria-controls="weight-panel" aria-selected="false">
+                        <i class="bi bi-speedometer2"></i> Weight Tracking
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="reportTabsContent">
+                <!-- Nutrition Report Panel -->
+                <div class="tab-pane fade show active" id="nutrition-panel" role="tabpanel" aria-labelledby="nutrition-tab">
+                    <div class="nutrition-content">
+                        <!-- Weekly Calorie Achievement Chart -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-bar-chart"></i> Weekly Calorie Achievement</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="weeklyCaloriesChart" width="400" height="200"></canvas>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <canvas id="weeklyCaloriesChart" width="400" height="200"></canvas>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-target"></i> Goal Achievement</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="achievement-stats">
+                                            <div class="stat-item">
+                                                <span class="label">Avg Daily Calories:</span>
+                                                <span class="value" id="avgDailyCalories">-</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="label">Goal Achievement:</span>
+                                                <span class="value" id="goalAchievement">-</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="label">Protein Target:</span>
+                                                <span class="value" id="proteinAchievement">-</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="label">Days On Track:</span>
+                                                <span class="value" id="daysOnTrack">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-target"></i> Goal Achievement</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="achievement-stats">
-                                    <div class="stat-item">
-                                        <span class="label">Avg Daily Calories:</span>
-                                        <span class="value" id="avgDailyCalories">-</span>
+                        
+                        <!-- Daily Macro Breakdown Table -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-grid-3x3"></i> Daily Macro Breakdown</h5>
                                     </div>
-                                    <div class="stat-item">
-                                        <span class="label">Goal Achievement:</span>
-                                        <span class="value" id="goalAchievement">-</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="label">Protein Target:</span>
-                                        <span class="value" id="proteinAchievement">-</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="label">Days On Track:</span>
-                                        <span class="value" id="daysOnTrack">-</span>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped" id="weeklyMacroTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Day</th>
+                                                        <th>Calories</th>
+                                                        <th>Protein (g)</th>
+                                                        <th>Fat (g)</th>
+                                                        <th>Carbs (g)</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Data will be populated by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-grid-3x3"></i> Daily Macro Breakdown</h5>
+
+                <!-- Weight Tracking Panel -->
+                <div class="tab-pane fade" id="weight-panel" role="tabpanel" aria-labelledby="weight-tab">
+                    <div class="weight-content">
+                        <!-- Weight Statistics Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Current Weight</h5>
+                                        <div class="stat-value" id="currentWeight">-</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped" id="weeklyMacroTable">
-                                        <thead>
-                                            <tr>
-                                                <th>Day</th>
-                                                <th>Calories</th>
-                                                <th>Protein (g)</th>
-                                                <th>Fat (g)</th>
-                                                <th>Carbs (g)</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Data will be populated by JS -->
-                                        </tbody>
-                                    </table>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Weight Change</h5>
+                                        <div class="stat-value" id="weightChange">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">BMI</h5>
+                                        <div class="stat-value" id="currentBMI">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Trend</h5>
+                                        <div class="stat-value" id="weightTrend">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weight Chart -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-graph-up"></i> Weight Progress</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div style="height: 400px; width: 100%;">
+                                            <canvas id="weightChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Weight Entry Form -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-plus-circle"></i> Add Weight Entry</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="weightForm">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="weightDate" class="form-label">Date</label>
+                                                        <input type="date" class="form-control" id="weightDate" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="weightValue" class="form-label">Weight</label>
+                                                        <div class="input-group">
+                                                            <input type="number" step="0.1" class="form-control" id="weightValue" required>
+                                                            <span class="input-group-text">kg</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="weightNote" class="form-label">Note (optional)</label>
+                                                        <input type="text" class="form-control" id="weightNote" placeholder="e.g., after workout">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-plus-circle"></i> Add Entry
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weight Entries Table -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-list-ul"></i> Recent Entries</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped" id="weightEntriesTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Weight</th>
+                                                        <th>Change</th>
+                                                        <th>Note</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Data will be populated by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -93,7 +241,14 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/utils/apiUtils.js"></script>
     <script src="/js/components/navbar.js"></script>
     <script src="/js/pages/reports.js"></script>
+    <script>
+        // Initialize authentication check
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeAuth();
+        });
+    </script>
 </body>
 </html> 

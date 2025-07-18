@@ -34,6 +34,7 @@ const foodsRoutes = require('./src/routes/foodsRoutes');
 const dailyMealsRoutes = require('./src/routes/dailyMealsRoutes');
 const settingsRoutes = require('./src/routes/settingsRoutes');
 const authRoutes = require('./src/routes/authRoutes');
+const weightRoutes = require('./src/routes/weightRoutes');
 
 // Import migration utility
 const { runMigration, needsMigration } = require('./src/utils/migration');
@@ -64,6 +65,7 @@ app.use('/api/foods', foodsRoutes);
 app.use('/api/daily-meals', dailyMealsRoutes); // Keep original path to maintain compatibility
 app.use('/api/meals', dailyMealsRoutes);       // Add new path for consistency
 app.use('/api/settings', settingsRoutes);
+app.use('/api/weight', weightRoutes);          // Weight tracking routes
 
 // Test route to verify API is working
 app.get('/api/test', (req, res) => {
@@ -109,6 +111,7 @@ async function startServer() {
             console.log('- GET  /api/daily-meals  (Get daily meals - user-specific)');
             console.log('- GET  /api/meals        (Alias for daily-meals)');
             console.log('- GET  /api/settings     (Get settings - user-specific)');
+            console.log('- GET  /api/weight       (Get weight entries - user-specific)');
             console.log('=================================');
         });
     } catch (error) {

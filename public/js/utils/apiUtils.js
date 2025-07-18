@@ -216,6 +216,24 @@ const API = {
     auth: {
         me: () => authenticatedFetch('/api/auth/me', {}, false, true), // Silent auth check
         logout: () => authenticatedFetch('/api/auth/logout', { method: 'POST' })
+    },
+    
+    // Weight tracking API
+    weight: {
+        getAll: () => authenticatedFetch('/api/weight'),
+        add: (entry) => authenticatedFetch('/api/weight', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+        }),
+        update: (id, entry) => authenticatedFetch(`/api/weight/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+        }),
+        delete: (id) => authenticatedFetch(`/api/weight/${id}`, {
+            method: 'DELETE'
+        })
     }
 };
 

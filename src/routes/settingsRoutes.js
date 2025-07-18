@@ -23,6 +23,7 @@ async function initializeUserSettingsFile(userSettingsFile) {
         await fs.access(userSettingsFile);
     } catch {
         const defaultSettings = {
+            userName: '',  // Will be populated from user session
             unitSystem: 'metric',
             sex: 'male',
             age: 30,
@@ -45,6 +46,7 @@ async function initializeSettingsFile() {
         await fs.access(LEGACY_SETTINGS_FILE);
     } catch {
         const defaultSettings = {
+            userName: '',  // Will be populated from user session  
             unitSystem: 'metric',
             sex: 'male',
             age: 30,
@@ -71,7 +73,17 @@ router.get('/', requireAuth, async (req, res) => {
         await initializeUserSettingsFile(userSettingsFile);
         
         const data = await fs.readFile(userSettingsFile, 'utf8');
-        res.json(JSON.parse(data));
+        const settings = JSON.parse(data);
+        
+        // Ensure userName is populated from session data
+        settings.userName = req.user.name || '';
+        
+        // Save the updated settings back to file if userName was added
+        if (!data.includes('"userName"')) {
+            await fs.writeFile(userSettingsFile, JSON.stringify(settings, null, 2));
+        }
+        
+        res.json(settings);
     } catch (error) {
         console.error('Error reading user settings:', error);
         res.status(500).json({ error: 'Failed to read settings' });
@@ -108,6 +120,27 @@ router.post('/', requireAuth, async (req, res) => {
         // Validate meal interval
         if (settings.mealInterval < 1 || settings.mealInterval > 6) {
             return res.status(400).json({ error: 'Meal interval must be between 1 and 6 hours' });
+        }
+
+        // Handle userName update - update both settings and user profile
+        if (settings.userName && settings.userName !== req.user.name) {
+            try {
+                // Update user's name in users.json
+                const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
+                const usersData = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
+                
+                const userIndex = usersData.users.findIndex(user => user.id === userId);
+                if (userIndex !== -1) {
+                    usersData.users[userIndex].name = settings.userName;
+                    await fs.writeFile(USERS_FILE, JSON.stringify(usersData, null, 2));
+                    
+                    // Update session data
+                    req.session.userName = settings.userName;
+                }
+            } catch (error) {
+                console.error('Error updating user name:', error);
+                // Continue with settings save even if name update fails
+            }
         }
 
         const userSettingsFile = getUserSettingsPath(userId);

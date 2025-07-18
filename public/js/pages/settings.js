@@ -4,40 +4,55 @@ class UserSettings {
         this.bmrValue = document.getElementById('bmrValue');
         this.totalCalories = document.getElementById('totalCalories');
         this.weeklyCalories = document.getElementById('weeklyCalories');
-        this.saveButton = this.form.querySelector('button[type="submit"]');
+        this.saveStatus = document.getElementById('saveStatus');
         this.unitSystem = document.getElementById('unitSystem');
         this.weightUnit = document.querySelector('.unit-weight');
         this.heightUnit = document.querySelector('.unit-height');
         this.userDisplay = document.getElementById('userDisplay');
+        this.hasUnsavedChanges = false;
+        this.saveTimeout = null;
         this.setupEventListeners();
         this.loadSettings();
     }
 
     setupEventListeners() {
+        // Prevent form submission
         this.form.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.saveSettings();
         });
 
-        // Update calculations and button state when any input changes
-        ['userName', 'sex', 'age', 'weight', 'height', 'activityLevel', 'calorieAdjustment', 'mealInterval'].forEach(id => {
+        // Auto-save on field blur and input changes
+        ['userNameInput', 'sex', 'age', 'weight', 'height', 'activityLevel', 'calorieAdjustment', 'mealInterval'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
+                // Update calculations on input
                 element.addEventListener('input', () => {
-                    if (id !== 'userName') {
+                    this.hasUnsavedChanges = true;
+                    this.showSaveStatus('pending');
+                    
+                    if (id !== 'userNameInput') {
                         this.updateCalculations();
                     }
-                    this.setSaveButtonState(false);
+                    
+                    // Debounced auto-save
+                    this.debouncedSave();
+                });
+                
+                // Also save on blur (when user leaves the field)
+                element.addEventListener('blur', () => {
+                    if (this.hasUnsavedChanges) {
+                        this.saveSettings();
+                    }
                 });
             }
         });
 
-        // Handle unit system changes
+        // Handle unit system changes (immediate save)
         this.unitSystem.addEventListener('change', () => {
             this.updateUnitLabels();
             this.convertUnits();
             this.updateCalculations();
-            this.setSaveButtonState(false);
+            this.saveSettings();
         });
     }
 
@@ -108,7 +123,7 @@ class UserSettings {
 
     getFormData() {
         return {
-            userName: document.getElementById('userName').value,
+            userName: document.getElementById('userNameInput').value,
             unitSystem: this.unitSystem.value,
             sex: document.getElementById('sex').value,
             age: document.getElementById('age').value,
@@ -124,26 +139,51 @@ class UserSettings {
         return data.age > 0 && data.weight > 0 && data.height > 0;
     }
 
-    setSaveButtonState(saved) {
-        if (saved) {
-            this.saveButton.innerHTML = '<i class="bi bi-check-circle me-2"></i>Saved';
-            this.saveButton.classList.remove('btn-primary');
-            this.saveButton.classList.add('btn-success');
-        } else {
-            this.saveButton.innerHTML = '<i class="bi bi-save me-2"></i>Save Settings';
-            this.saveButton.classList.remove('btn-success');
-            this.saveButton.classList.add('btn-primary');
+    showSaveStatus(status) {
+        const icon = this.saveStatus.querySelector('i');
+        const text = this.saveStatus.querySelector('span');
+        
+        switch (status) {
+            case 'pending':
+                icon.className = 'bi bi-clock text-warning';
+                text.textContent = 'Saving...';
+                text.className = 'text-warning';
+                break;
+            case 'saved':
+                icon.className = 'bi bi-check-circle text-success';
+                text.textContent = 'All changes saved';
+                text.className = 'text-success';
+                break;
+            case 'error':
+                icon.className = 'bi bi-exclamation-triangle text-danger';
+                text.textContent = 'Error saving changes';
+                text.className = 'text-danger';
+                break;
         }
+    }
+
+    debouncedSave() {
+        // Clear existing timeout
+        if (this.saveTimeout) {
+            clearTimeout(this.saveTimeout);
+        }
+        
+        // Set new timeout for auto-save
+        this.saveTimeout = setTimeout(() => {
+            if (this.hasUnsavedChanges) {
+                this.saveSettings();
+            }
+        }, 1000); // Save after 1 second of inactivity
     }
 
     async saveSettings() {
         const formData = this.getFormData();
         if (!this.isValidData(formData)) {
-            this.saveButton.classList.add('btn-danger');
-            this.saveButton.textContent = 'Invalid Data';
-            setTimeout(() => this.setSaveButtonState(false), 2000);
+            this.showSaveStatus('error');
             return;
         }
+
+        this.showSaveStatus('pending');
 
         try {
             await API.settings.save({
@@ -155,13 +195,29 @@ class UserSettings {
             
             // Update username display after successful save
             this.updateUserDisplay(formData.userName);
-            this.setSaveButtonState(true);
+            this.hasUnsavedChanges = false;
+            this.showSaveStatus('saved');
+            
+            // Add brief visual feedback to form fields
+            this.showFieldSaveSuccess();
         } catch (error) {
             console.error('Error saving settings:', error);
-            this.saveButton.classList.add('btn-danger');
-            this.saveButton.textContent = 'Error Saving';
-            setTimeout(() => this.setSaveButtonState(false), 2000);
+            this.showSaveStatus('error');
         }
+    }
+
+    showFieldSaveSuccess() {
+        // Add 'saved' class to all form fields briefly
+        const fields = ['userNameInput', 'sex', 'age', 'weight', 'height', 'activityLevel', 'calorieAdjustment', 'mealInterval'];
+        fields.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add('saved');
+                setTimeout(() => {
+                    element.classList.remove('saved');
+                }, 2000);
+            }
+        });
     }
 
     updateUserDisplay(userName) {
@@ -174,22 +230,80 @@ class UserSettings {
         try {
             const response = await API.settings.get();
             const settings = await response.json();
+            
+            // Debug: Check if userName is in the response
+            console.log('Loading settings for user:', settings.userName || 'UNKNOWN');
+            
             this.populateForm(settings);
             this.updateUnitLabels();
             this.updateCalculations();
             this.updateUserDisplay(settings.userName);
-            this.setSaveButtonState(true);
+            this.hasUnsavedChanges = false;
+            this.showSaveStatus('saved');
+            
+            // Final check to ensure userName is populated correctly
+            this.ensureUserNamePopulated(settings.userName);
         } catch (error) {
             console.error('Error loading settings:', error);
-            this.setSaveButtonState(false);
+            this.showSaveStatus('error');
         }
     }
 
     populateForm(settings) {
+        // Explicitly handle userName first
+        const userNameElement = document.getElementById('userNameInput');
+        if (userNameElement && settings.userName) {
+            userNameElement.value = settings.userName;
+            userNameElement.setAttribute('value', settings.userName);
+        }
+        
+        // Handle other fields
         Object.entries(settings).forEach(([key, value]) => {
+            // Skip userName as it's handled separately with userNameInput ID
+            if (key === 'userName') return;
+            
             const element = document.getElementById(key);
-            if (element) element.value = value;
+            if (element) {
+                element.value = value || '';
+            }
         });
+    }
+
+    ensureUserNamePopulated(userName) {
+        const userNameElement = document.getElementById('userNameInput');
+        if (!userNameElement || !userName) return;
+        
+        // Multiple attempts to populate the field
+        const setUserName = () => {
+            userNameElement.value = userName;
+            userNameElement.setAttribute('value', userName);
+            console.log('userName field populated with:', userName);
+        };
+        
+        // Set immediately
+        setUserName();
+        
+        // Check after a short delay and re-set if needed
+        setTimeout(() => {
+            if (!userNameElement.value) {
+                console.log('userName field was empty, re-setting...');
+                setUserName();
+            }
+        }, 100);
+        
+        // Final check after longer delay
+        setTimeout(() => {
+            if (!userNameElement.value) {
+                console.log('userName field still empty after 500ms, forcing...');
+                setUserName();
+                // Remove and re-add the field to force refresh
+                const parent = userNameElement.parentNode;
+                const nextSibling = userNameElement.nextSibling;
+                parent.removeChild(userNameElement);
+                userNameElement.value = userName;
+                parent.insertBefore(userNameElement, nextSibling);
+            }
+        }, 500);
     }
 }
 

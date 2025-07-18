@@ -1,43 +1,137 @@
 /* Reports Page Specific Styles */
 
+/* Main section spacing */
+.main-section {
+    padding: 0;
+    margin: 0;
+}
+
+.main-section .container {
+    padding: 12px 20px;
+}
+
+/* Report Tabs - Match navbar styling - HIGH SPECIFICITY */
+#reportTabs.nav-tabs {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Base tab styling */
+#reportTabs li.nav-item button.nav-link {
+    padding: 12px 24px !important;
+    color: #666 !important;
+    text-decoration: none !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Active tab styling - VERY HIGH SPECIFICITY */
+#reportTabs li.nav-item button.nav-link.active,
+#reportTabs li.nav-item button.nav-link[aria-selected="true"] {
+    color: #1a73e8 !important;
+    border-bottom: 2px solid #1a73e8 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Hover state */
+#reportTabs li.nav-item button.nav-link:hover:not(.active) {
+    color: #333 !important;
+    border-bottom: 2px solid #e0e0e0 !important;
+}
+
+
+
+/* Weight entries table inline editing */
+#weightEntriesTable tr.editing {
+    background-color: #f8f9fa;
+    border-left: 3px solid #007bff;
+}
+
+#weightEntriesTable .weight-edit input {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    height: auto;
+    min-height: 1.5rem;
+}
+
+#weightEntriesTable .weight-edit .input-group {
+    min-width: 100px;
+}
+
+#weightEntriesTable .btn-group {
+    white-space: nowrap;
+}
+
+/* Tab content styling */
+.tab-content {
+    margin-top: 16px;
+}
+
+.tab-pane {
+    animation: fadeIn 0.3s ease-in-out;
+    min-height: 500px;
+}
+
+.tab-pane.active {
+    display: block !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Page title styling */
 h1 {
     color: var(--gray-dark, #333);
     font-weight: var(--font-weight-semibold, 600);
-    margin-bottom: 2rem !important;
+    margin-bottom: 1rem !important;
 }
 
 /* Reports specific container */
 .main-container {
     max-width: var(--container-max-width, 1200px);
     margin: 0 auto;
-    padding: 24px;
+    padding: 12px;
 }
 
 /* Chart containers specific to reports */
 .chart-container {
     position: relative;
     width: 100%;
-    height: 400px;
-    padding: 20px 0;
+    height: 300px;
+    padding: 12px 0;
 }
 
 .chart-container canvas {
-    max-height: 400px !important;
+    max-height: 300px !important;
 }
 
 /* Achievement Stats Styling - Dynamic performance-based colors */
 .achievement-stats {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
 .stat-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
+    padding: 10px;
     background-color: var(--gray-light, #f8f9fa);
     border-radius: var(--border-radius, 8px);
     border: 1px solid var(--gray-border, #dee2e6);
@@ -133,11 +227,11 @@ h1 {
     border-bottom: 2px solid var(--gray-border, #dee2e6);
     font-weight: var(--font-weight-semibold, 600);
     color: var(--gray-dark, #495057);
-    padding: 12px 8px;
+    padding: 10px 8px;
 }
 
 .table td {
-    padding: 10px 8px;
+    padding: 8px 8px;
     vertical-align: middle;
     border-color: var(--gray-border, #dee2e6);
 }
@@ -170,19 +264,72 @@ h1 {
     border: 1px solid var(--danger-red, #dc3545);
 }
 
+/* Weight tracking specific styles */
+.stat-value {
+    font-size: 1.5rem !important;
+    font-weight: var(--font-weight-semibold, 600) !important;
+    color: var(--primary-blue, #1a73e8) !important;
+    padding: 8px 0 !important;
+    display: block !important;
+    text-align: center !important;
+    min-height: 40px !important;
+}
+
+#weight-report .card {
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    margin-bottom: 15px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+}
+
+#weight-report .card-body {
+    padding: 16px !important;
+}
+
+#weight-report .card-title {
+    font-size: 0.9rem !important;
+    color: var(--gray-dark, #495057) !important;
+    margin-bottom: 8px !important;
+}
+
+#weight-report .row {
+    margin-bottom: 15px !important;
+}
+
+#weight-report .col-md-3 {
+    margin-bottom: 15px !important;
+}
+
+/* Force visibility for weight tracking tab */
+#weight-report {
+    display: block !important;
+    min-height: 600px !important;
+    background-color: #f8f9fa !important;
+    padding: 20px !important;
+}
+
+#weight-report.active {
+    display: block !important;
+    opacity: 1 !important;
+}
+
 /* Reports page responsive adjustments */
 @media (max-width: 768px) {
+    .main-section .container {
+        padding: 8px 15px;
+    }
+
     .chart-container {
-        height: 300px;
-        padding: 15px 0;
+        height: 250px;
+        padding: 8px 0;
     }
 
     .chart-container canvas {
-        max-height: 300px !important;
+        max-height: 250px !important;
     }
 
     .stat-item {
-        padding: 10px;
+        padding: 8px;
     }
 
     .stat-item .value {
