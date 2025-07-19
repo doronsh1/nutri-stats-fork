@@ -309,12 +309,12 @@ class WeightTracker {
     updateWeightStatistics() {
         const currentWeight = this.weightData.length > 0 ? this.weightData[0].weight : 0;
         const weightChange = this.calculateWeightChange();
-        const bmi = this.calculateBMI(currentWeight);
+        const totalWeightChange = this.calculateTotalWeightChange();
         const trend = this.calculateTrend();
 
         document.getElementById('currentWeight').textContent = currentWeight ? `${currentWeight.toFixed(1)} kg` : 'No data';
         document.getElementById('weightChange').textContent = weightChange ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} kg` : 'No change';
-        document.getElementById('currentBMI').textContent = bmi ? bmi.toFixed(1) : 'No data';
+        document.getElementById('totalWeightChange').textContent = totalWeightChange ? `${totalWeightChange > 0 ? '+' : ''}${totalWeightChange.toFixed(1)} kg` : 'No data';
         document.getElementById('weightTrend').textContent = trend;
     }
 
@@ -323,10 +323,12 @@ class WeightTracker {
         return this.weightData[0].weight - this.weightData[1].weight;
     }
 
-    calculateBMI(weight) {
-        if (!weight || !this.settings?.height) return 0;
-        const heightInMeters = this.settings.height / 100;
-        return weight / (heightInMeters * heightInMeters);
+    calculateTotalWeightChange() {
+        if (this.weightData.length < 2) return 0;
+        // Calculate difference between current weight (first entry) and starting weight (last entry)
+        const currentWeight = this.weightData[0].weight;
+        const startingWeight = this.weightData[this.weightData.length - 1].weight;
+        return currentWeight - startingWeight;
     }
 
     calculateTrend() {
