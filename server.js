@@ -3,9 +3,12 @@ const path = require('path');
 const fs = require('fs').promises;
 const session = require('express-session');
 
+// Database initialization (non-blocking)
+const { initializeDatabase, testConnection } = require('./src/database/init');
+
 // Initialize express app
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 // Middleware for parsing JSON and logging
 app.use(express.json());
@@ -22,7 +25,17 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    // Skip logging common bot/scanner requests
+    const botPatterns = [
+        '/download/', '/get.php', '/wp-admin', '/phpmyadmin', 
+        '/admin', '/robots.txt', '/favicon.ico'
+    ];
+    
+    const isBotRequest = botPatterns.some(pattern => req.url.includes(pattern));
+    
+    if (!isBotRequest) {
+        console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    }
     next();
 });
 
@@ -33,29 +46,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 const foodsRoutes = require('./src/routes/foodsRoutes');
 const dailyMealsRoutes = require('./src/routes/dailyMealsRoutes');
 const settingsRoutes = require('./src/routes/settingsRoutes');
-const authRoutes = require('./src/routes/authRoutes');
+const authRoutes = require('./src/routes/auth'); // Use JWT-based auth
 const weightRoutes = require('./src/routes/weightRoutes');
 
-// Import migration utility
-const { runMigration, needsMigration } = require('./src/utils/migration');
-
-// Ensure data directories exist and run migration if needed
-async function ensureDirectoriesAndMigrate() {
+// Ensure data directory exists for SQLite database
+async function ensureDataDirectory() {
     try {
         await fs.mkdir(path.join(__dirname, 'src', 'data'), { recursive: true });
-        await fs.mkdir(path.join(__dirname, 'src', 'data', 'meals'), { recursive: true });
-        await fs.mkdir(path.join(__dirname, 'src', 'data', 'foods'), { recursive: true });
-        await fs.mkdir(path.join(__dirname, 'src', 'data', 'users'), { recursive: true });
-
-        // Check if migration is needed
-        if (await needsMigration()) {
-            console.log('\n🔄 Migration needed. Converting to multi-user structure...');
-            await runMigration();
-            console.log('✅ Migration completed. Server ready!\n');
-        }
     } catch (error) {
-        console.error('Error in setup:', error);
-        throw error;
+        console.error('Error creating data directory:', error);
     }
 }
 
@@ -72,13 +71,9 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'API is working' });
 });
 
-// Default route - redirect based on authentication
+// Default route - serve login page (let frontend handle auth)
 app.get('/', (req, res) => {
-    if (req.session.userId) {
-    res.redirect('/diary.html');
-    } else {
-        res.redirect('/login.html');
-    }
+    res.redirect('/login.html');
 });
 
 // Error handling middleware
@@ -96,11 +91,14 @@ app.use((req, res) => {
 // Initialize server
 async function startServer() {
     try {
-        // Ensure all required directories exist and run migration if needed
-        await ensureDirectoriesAndMigrate();
+        // Ensure data directory exists for SQLite database
+        await ensureDataDirectory();
 
-        // Start the server
-        app.listen(port, () => {
+        // Initialize database (non-blocking - server starts even if DB fails)
+        initializeDatabaseAsync();
+
+        // Start the server - bind to all interfaces for cloud deployment
+        app.listen(port, '0.0.0.0', () => {
             console.log('=================================');
             console.log(`Server is running on port ${port}`);
             console.log('Available routes:');
@@ -117,6 +115,23 @@ async function startServer() {
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
+    }
+}
+
+// Simple database initialization
+async function initializeDatabaseAsync() {
+    try {
+        console.log('Connecting to database...');
+        
+        const connected = await testConnection();
+        if (connected) {
+            await initializeDatabase();
+            console.log('Database ready');
+        } else {
+            console.log('Database not available');
+        }
+    } catch (error) {
+        console.log('Database error:', error.message);
     }
 }
 

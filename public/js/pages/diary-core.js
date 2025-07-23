@@ -1,10 +1,14 @@
 // Global variables
 let currentDate = new Date();
+window.currentDate = currentDate; // Make it accessible globally
 let mealInterval = 3; // Default interval, will be updated from settings
 let userWeight = 70; // Default weight, will be updated from settings
 let goalCalories = 0; // Will be updated from settings
 let isMetricSystem = true; // Will be updated from settings
 let baseGoalCalories = 0; // Store the base goal calories before adjustment
+
+// Add debounce tracking for saves
+const saveDebounceMap = new Map();
 
 // Goal percentage thresholds for color coding
 const GOAL_GREEN_THRESHOLD = 5; // Within 5% shows green
@@ -41,6 +45,8 @@ async function loadSettings() {
         goalCalories = baseGoalCalories; // Initialize with base value
         isMetricSystem = settings.unitSystem === 'metric';
         
+        console.log('🔍 Settings loaded - Base Goal Calories:', baseGoalCalories);
+        
         // Update goal calories display
         document.getElementById('goalCalories').textContent = Math.round(goalCalories);
         
@@ -56,12 +62,14 @@ async function loadSettings() {
             span.textContent = `(${weightUnit})`;
         });
         
-        // Set protein and fat levels from settings or defaults
+        // Set protein and fat levels from settings (empty for new users)
         const proteinLevelInput = document.getElementById('proteinLevelInput');
         const fatLevelInput = document.getElementById('fatLevelInput');
-        proteinLevelInput.value = settings.proteinLevel || '1.9'; // Default to 1.9g/kg
-        fatLevelInput.value = settings.fatLevel || '0.8'; // Default to 0.8g/kg
-        calculateMacroStats();
+        proteinLevelInput.value = settings.proteinLevel || ''; // Empty for new users
+        fatLevelInput.value = settings.fatLevel || ''; // Empty for new users
+        
+        // Calculate macro stats without saving (since we haven't loaded daily values yet)
+        calculateMacroStatsWithoutSave();
     } catch (error) {
         console.error('Error loading settings:', error);
     }
@@ -76,19 +84,33 @@ async function initializePage() {
 }
 
 function applyCalorieAdjustment() {
-    const adjustment = parseInt(document.getElementById('calorieAdjustmentInput').value) || 0;
+    const calorieAdjustmentInput = document.getElementById('calorieAdjustmentInput');
+    const adjustment = parseInt(calorieAdjustmentInput.value) || 0;
     goalCalories = baseGoalCalories + adjustment;
     document.getElementById('goalCalories').textContent = Math.round(goalCalories);
+    console.log('🔍 Calorie adjustment applied - Base:', baseGoalCalories, 'Adjustment:', adjustment, 'Final:', goalCalories, 'Raw input:', calorieAdjustmentInput.value);
     // Remove saveMacroSettings call from here since it will be called by calculateMacroStats
 }
 
 async function saveMacroSettings() {
     try {
-        const proteinLevel = parseFloat(document.getElementById('proteinLevelInput').value) || 0;
-        const fatLevel = parseFloat(document.getElementById('fatLevelInput').value) || 0;
-        const calorieAdjustment = parseInt(document.getElementById('calorieAdjustmentInput').value) || 0;
+        const proteinLevelInput = document.getElementById('proteinLevelInput');
+        const fatLevelInput = document.getElementById('fatLevelInput');
+        const calorieAdjustmentInput = document.getElementById('calorieAdjustmentInput');
+        
+        const proteinLevel = proteinLevelInput.value ? parseFloat(proteinLevelInput.value) : null;
+        const fatLevel = fatLevelInput.value ? parseFloat(fatLevelInput.value) : null;
+        const calorieAdjustment = calorieAdjustmentInput.value ? parseInt(calorieAdjustmentInput.value) : 0;
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = days[currentDate.getDay()];
+
+        console.log('💾 Saving macro settings:', {
+            dayName,
+            proteinLevel,
+            fatLevel,
+            calorieAdjustment,
+            rawCalorieInput: calorieAdjustmentInput.value
+        });
 
         // Save all macro settings together
         await API.meals.saveMacros(dayName, {
@@ -96,6 +118,8 @@ async function saveMacroSettings() {
                 fatLevel,
                 calorieAdjustment
         });
+        
+        console.log('✅ Macro settings saved successfully');
     } catch (error) {
         console.error('Error saving macro settings:', error);
         showError(error.message || 'Failed to save macro settings');
@@ -138,38 +162,67 @@ async function loadMeals() {
         const proteinLevelInput = document.getElementById('proteinLevelInput');
         const fatLevelInput = document.getElementById('fatLevelInput');
         const calorieAdjustmentInput = document.getElementById('calorieAdjustmentInput');
-        proteinLevelInput.value = data.proteinLevel || '1.9';
-        fatLevelInput.value = data.fatLevel || '0.8';
+        proteinLevelInput.value = data.proteinLevel || '';
+        fatLevelInput.value = data.fatLevel || '';
         calorieAdjustmentInput.value = data.calorieAdjustment || '';
         
-        // Store base goal calories and apply adjustment
-        baseGoalCalories = goalCalories;
+        console.log('🔍 Loaded daily macro settings:', {
+            proteinLevel: data.proteinLevel,
+            fatLevel: data.fatLevel,
+            calorieAdjustment: data.calorieAdjustment,
+            proteinLevelType: typeof data.proteinLevel,
+            fatLevelType: typeof data.fatLevel
+        });
+        
+        // Apply the daily calorie adjustment to the base goal
         applyCalorieAdjustment();
-        calculateMacroStats(); // This will call saveMacroSettings once
         
         const mealsContainer = document.getElementById('mealsContainer');
         mealsContainer.innerHTML = ''; // Clear existing content
 
+        // Ensure we always have all 6 meals with default data
+        const defaultTimes = ["08:00", "11:00", "14:00", "17:00", "20:00", "23:00"];
+        const allMeals = [];
+        
+        for (let i = 0; i < 6; i++) {
+            // Use existing meal data if available, otherwise create default meal
+            const existingMeal = data.meals && data.meals.find(m => m.id === i + 1);
+            const meal = existingMeal || {
+                id: i + 1,
+                time: defaultTimes[i],
+                items: []
+            };
+            allMeals.push(meal);
+        }
+
         // Create row 1: meals 1 and 4
         const row1 = document.createElement('div');
         row1.className = 'meals-row';
-        if (data.meals[0]) row1.appendChild(createMealSection(data.meals[0])); // Meal 1
-        if (data.meals[3]) row1.appendChild(createMealSection(data.meals[3])); // Meal 4
+        row1.appendChild(createMealSection(allMeals[0])); // Meal 1
+        row1.appendChild(createMealSection(allMeals[3])); // Meal 4
         mealsContainer.appendChild(row1);
 
         // Create row 2: meals 2 and 5
         const row2 = document.createElement('div');
         row2.className = 'meals-row';
-        if (data.meals[1]) row2.appendChild(createMealSection(data.meals[1])); // Meal 2
-        if (data.meals[4]) row2.appendChild(createMealSection(data.meals[4])); // Meal 5
+        row2.appendChild(createMealSection(allMeals[1])); // Meal 2
+        row2.appendChild(createMealSection(allMeals[4])); // Meal 5
         mealsContainer.appendChild(row2);
 
         // Create row 3: meals 3 and 6
         const row3 = document.createElement('div');
         row3.className = 'meals-row';
-        if (data.meals[2]) row3.appendChild(createMealSection(data.meals[2])); // Meal 3
-        if (data.meals[5]) row3.appendChild(createMealSection(data.meals[5])); // Meal 6
+        row3.appendChild(createMealSection(allMeals[2])); // Meal 3
+        row3.appendChild(createMealSection(allMeals[5])); // Meal 6
         mealsContainer.appendChild(row3);
+
+        // Calculate macro stats without saving (after all meal sections are created)
+        calculateMacroStatsWithoutSave();
+
+        // Update paste buttons to reflect current copy state
+        if (window.mealCopyPaste) {
+            window.mealCopyPaste.updatePasteButtons();
+        }
 
     } catch (error) {
         console.error('Error loading meals:', error);
@@ -219,18 +272,30 @@ async function updateAllMealTimes(firstMealTime) {
                 await saveMealTime(mealId, formattedTime);
             }
         }
-    } catch (error) {
-        console.error('Error updating meal times:', error);
-        showError('Failed to update meal times');
-        loadMeals(); // Reload to show previous state
-    }
+            } catch (error) {
+            console.error('Error updating meal times:', error);
+            showError('Failed to update meal times');
+            loadMeals(); // Reload to show previous state
+        }
+        
+        // Clean up any duplicate placeholders after updating all meal times
+        try {
+            const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const dayName = days[currentDate.getDay()];
+            await API.meals.cleanupPlaceholders(dayName);
+        } catch (error) {
+            console.error('Error cleaning up placeholders:', error);
+            // Don't show error to user, this is just cleanup
+        }
 }
 
 async function saveMealTime(mealId, newTime) {
     try {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = days[currentDate.getDay()];
+        console.log(`💾 Saving meal ${mealId} time to ${newTime} for ${dayName}`);
         await API.meals.updateMealTime(dayName, mealId, newTime);
+        console.log(`✅ Meal ${mealId} time saved successfully`);
     } catch (error) {
         console.error('Error saving meal time:', error);
         showError('Failed to save meal time');
@@ -239,30 +304,66 @@ async function saveMealTime(mealId, newTime) {
 
 async function saveMealData(row) {
     try {
-    const mealSection = row.closest('.meal-section');
+        const mealSection = row.closest('.meal-section');
         if (!mealSection) return;
 
-    const mealId = mealSection.dataset.mealId;
+        const mealId = mealSection.dataset.mealId;
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = days[currentDate.getDay()];
 
-        // Get all values from the row
+        // Create unique key for this row to prevent duplicate saves
         const nameInput = row.querySelector('.food-search-input');
         const amountInput = row.querySelector('input[type="number"]');
+        const rowKey = `${dayName}-${mealId}-${nameInput?.value?.trim() || 'empty'}-${amountInput?.value || '0'}`;
+        
+        // Check if we're already saving this row recently (within 1 second)
+        const now = Date.now();
+        const lastSave = saveDebounceMap.get(rowKey);
+        if (lastSave && (now - lastSave) < 1000) {
+            console.log(`⏭️ Skipping duplicate save for "${nameInput?.value}" (too recent)`);
+            return;
+        }
+        
+        // Record this save attempt
+        saveDebounceMap.set(rowKey, now);
+        
+        // Clean up old entries (older than 5 minutes) to prevent memory leaks
+        if (Math.random() < 0.1) { // Only do this 10% of the time to avoid performance impact
+            for (const [key, timestamp] of saveDebounceMap.entries()) {
+                if (now - timestamp > 300000) { // 5 minutes
+                    saveDebounceMap.delete(key);
+                }
+            }
+        }
+
+        // Get all values from the row
         const nutritionalDivs = row.querySelectorAll('.nutritional-value');
 
-        // Only save if there's a food name
+        // If no food name, delete the item if it exists
         if (!nameInput || !nameInput.value.trim()) {
-            // If this row had an ID, we need to delete it
             const itemId = row.dataset.itemId;
             if (itemId) {
                 await API.meals.deleteItem(dayName, mealId, itemId);
                 delete row.dataset.itemId;
             }
-        return;
-    }
+            return;
+        }
 
-    const itemData = {
+        // Validate that we have either nutritional data OR it's a manual entry
+        const hasNutritionalData = Array.from(nutritionalDivs).some(div => 
+            div.textContent && parseFloat(div.textContent) > 0
+        );
+        
+        const hasAmount = amountInput && parseFloat(amountInput.value) > 0;
+        
+        // Don't save if it looks like incomplete autocomplete selection
+        // (has name but no nutritional data and no manual amount)
+        if (!hasNutritionalData && !hasAmount && nameInput.value.length < 10) {
+            console.log(`⚠️ Skipping save for "${nameInput.value}" - appears to be incomplete entry`);
+            return;
+        }
+
+        const itemData = {
             name: nameInput.value.trim(),
             amount: parseFloat(amountInput?.value) || 0,
             baseAmount: parseFloat(amountInput?.getAttribute('data-base-amount')) || parseFloat(amountInput?.value) || 0,
@@ -278,6 +379,17 @@ async function saveMealData(row) {
             baseProteinG: parseFloat(nutritionalDivs[4]?.getAttribute('data-base-value')) || parseFloat(nutritionalDivs[4]?.textContent) || 0
         };
 
+        // Log what we're about to save for debugging
+        console.log(`💾 Saving meal data:`, {
+            name: itemData.name,
+            amount: itemData.amount,
+            baseAmount: itemData.baseAmount,
+            calories: itemData.calories,
+            hasNutritionalData: hasNutritionalData,
+            amountInputValue: amountInput?.value,
+            dataBaseAmount: amountInput?.getAttribute('data-base-amount')
+        });
+
         const itemId = row.dataset.itemId;
         let savedItem;
 
@@ -286,8 +398,14 @@ async function saveMealData(row) {
             const response = await API.meals.updateItem(dayName, mealId, itemId, itemData);
             savedItem = await response.json();
         } else {
-            // Create new item
-            const response = await API.meals.addItem(dayName, mealId, itemData);
+            // Create new item - get the current meal time
+            const timeInput = mealSection.querySelector('.meal-time');
+            const mealTime = timeInput ? timeInput.value : '08:00'; // fallback to default
+            
+            // Add meal time to itemData so the backend can use it
+            const itemDataWithTime = { ...itemData, mealTime };
+            
+            const response = await API.meals.addItem(dayName, mealId, itemDataWithTime);
             savedItem = await response.json();
         }
         

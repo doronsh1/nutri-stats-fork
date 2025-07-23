@@ -136,26 +136,58 @@ function createMealSection(meal) {
 
     // Create time input group
     const timeGroup = document.createElement('div');
-    timeGroup.className = 'd-flex align-items-center';
-    timeGroup.innerHTML = `
+    timeGroup.className = 'd-flex align-items-center justify-content-between w-100';
+    
+    // Left side: meal title and time
+    const leftGroup = document.createElement('div');
+    leftGroup.className = 'd-flex align-items-center';
+    leftGroup.innerHTML = `
         <h3 class="me-2 mb-0">Meal ${meal.id}</h3>
         <input type="text" 
                class="form-control form-control-sm meal-time" 
-               style="width: 120px;" 
+               style="width: 120px; ${meal.id > 1 ? 'border-color: #28a745;' : ''}" 
                value="${meal.time}"
                placeholder="HH:MM"
                maxlength="5"
-               data-meal-id="${meal.id}">
+               data-meal-id="${meal.id}"
+               title="${meal.id === 1 ? 'Change this time to update all meals' : 'Change this meal time independently'}">
     `;
-
+    
+    // Right side: copy/paste buttons
+    const rightGroup = document.createElement('div');
+    rightGroup.className = 'd-flex align-items-center gap-2';
+    rightGroup.innerHTML = `
+        <button type="button" 
+                class="btn btn-outline-primary btn-sm copy-meal-btn" 
+                data-meal-id="${meal.id}"
+                title="Copy this meal">
+            <i class="bi bi-copy"></i> Copy
+        </button>
+        <button type="button" 
+                class="btn btn-outline-success btn-sm paste-meal-btn" 
+                data-meal-id="${meal.id}"
+                title="Paste copied meal here"
+                disabled>
+            <i class="bi bi-clipboard"></i> Paste
+        </button>
+    `;
+    
+    timeGroup.appendChild(leftGroup);
+    timeGroup.appendChild(rightGroup);
     header.appendChild(timeGroup);
     section.appendChild(header);
 
-    // Add event listener for meal time input if this is meal 1
+    // Add event listener for meal time input
+    const timeInput = timeGroup.querySelector('.meal-time');
     if (meal.id === 1) {
-        const timeInput = timeGroup.querySelector('.meal-time');
+        // For meal 1, update all other meals based on interval
         timeInput.addEventListener('change', function () {
             updateAllMealTimes(this.value);
+        });
+    } else {
+        // For meals 2-6, update only this meal's time
+        timeInput.addEventListener('change', function () {
+            saveMealTime(meal.id, this.value);
         });
     }
 
@@ -249,27 +281,101 @@ function setupRowEventListeners(input) {
         foodSearch.setupSearchInput(input);
     }
 
-    // Add input event listener to clear values when item name is deleted
+    // Add debounced save to prevent premature saves during typing
+    let saveTimeout;
+    let isTyping = false;
+    let lastInputTime = 0;
+
+    // Add input event listener with improved logic
     input.addEventListener('input', async function () {
+        isTyping = true;
+        lastInputTime = Date.now();
+        
+        // Clear existing timeout
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+        }
+
         if (!this.value.trim()) {
+            // If input is empty, clear and save immediately
             const row = this.closest('tr');
             clearRowValues(row);
             await saveMealData(row);
             checkRowsAndUpdate(row.parentElement);
+            isTyping = false;
+        } else {
+            // If user is typing, wait before saving
+            saveTimeout = setTimeout(async () => {
+                isTyping = false;
+                const row = this.closest('tr');
+                
+                // Only auto-save if user has stopped typing for at least 2 seconds
+                // and the food data seems complete (has nutritional values)
+                const nutritionalDivs = row.querySelectorAll('.nutritional-value');
+                const hasNutritionalData = Array.from(nutritionalDivs).some(div => 
+                    div.textContent && parseFloat(div.textContent) > 0
+                );
+                
+                // Only save if we have nutritional data or if it's been a while since typing
+                if (hasNutritionalData || (Date.now() - lastInputTime > 3000)) {
+                    await saveMealData(row);
+                }
+            }, 2000); // Wait 2 seconds after typing stops
         }
     });
 
-    // Add blur event
+    // Improved blur event with validation
     input.addEventListener('blur', async function () {
-        if (!this.value.trim()) {
-            const row = this.closest('tr');
-            clearRowValues(row);
-            await saveMealData(row);
-        } else {
-            const row = this.closest('tr');
-            await saveMealData(row);
+        // Clear any pending save timeout
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
         }
-        checkRowsAndUpdate(this.closest('tbody'));
+
+        // Small delay to allow for food selection to complete
+        setTimeout(async () => {
+            const row = this.closest('tr');
+            
+            if (!this.value.trim()) {
+                // Empty input - clear and save
+                clearRowValues(row);
+                await saveMealData(row);
+            } else {
+                // Check if we have complete food data
+                const nutritionalDivs = row.querySelectorAll('.nutritional-value');
+                const hasNutritionalData = Array.from(nutritionalDivs).some(div => 
+                    div.textContent && parseFloat(div.textContent) > 0
+                );
+                
+                // Only save if we have nutritional data, indicating a proper food selection
+                if (hasNutritionalData) {
+                    await saveMealData(row);
+                } else {
+                    // If no nutritional data but user typed something, 
+                    // try to find and suggest matching foods
+                    console.log(`⚠️ Food name "${this.value}" entered but no nutritional data found. User may need to select from autocomplete.`);
+                    
+                    // Don't save incomplete data - let user select from autocomplete
+                    // Focus back on input to show autocomplete suggestions
+                    if (this.value.length > 2) {
+                        this.focus();
+                        // Trigger search to show suggestions
+                        const event = new Event('input');
+                        this.dispatchEvent(event);
+                    }
+                }
+            }
+            
+            checkRowsAndUpdate(this.closest('tbody'));
+            isTyping = false;
+        }, 300); // Small delay to allow autocomplete selection to complete
+    });
+
+    // Add keydown event to handle Enter key
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.blur(); // Trigger save via blur event
+        }
     });
 }
 
@@ -344,6 +450,8 @@ async function handleAmountChange(input) {
     const newAmount = parseFloat(input.value) || 0;
     const baseAmount = parseFloat(input.getAttribute('data-base-amount')) || 0;
 
+    console.log('🔍 Amount change - New amount:', newAmount, 'Base amount:', baseAmount);
+
     if (baseAmount > 0 && newAmount >= 0) {
         const ratio = newAmount / baseAmount;
 
@@ -354,12 +462,30 @@ async function handleAmountChange(input) {
                 div.textContent = newValue;
             }
         });
+        
+        // Update base amount to the new amount if this is a significant change
+        // This ensures that when user navigates between days, the base amount reflects their intended serving size
+        if (Math.abs(newAmount - baseAmount) > 0.1) { // Allow small rounding differences
+            input.setAttribute('data-base-amount', newAmount.toString());
+            
+            // Update base values to current calculated values
+            nutritionalDivs.forEach((div, index) => {
+                const currentValue = parseFloat(div.textContent) || 0;
+                div.setAttribute('data-base-value', currentValue.toString());
+            });
+            
+            console.log('🔍 Updated base amount to:', newAmount, 'and base values to current calculated values');
+        }
     } else {
         nutritionalDivs.forEach(div => div.textContent = '');
     }
 
     updateRowTotals(input);
-    await saveMealData(row);
+    
+    // Small delay to ensure food selection processing is complete
+    setTimeout(async () => {
+        await saveMealData(row);
+    }, 50);
 }
 
 function createFoodItemRow(item) {

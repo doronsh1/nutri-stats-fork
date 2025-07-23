@@ -82,15 +82,23 @@ class NutritionReports {
         
         return days.map((day, index) => {
             const totals = this.calculateDayTotals(this.weeklyData[day]);
-            const goalCalories = this.settings?.totalCalories || 2700;
-            const proteinTarget = (this.settings?.weight || 70) * 1.9;
+            
+            // Get daily macro settings for this day
+            const dayData = this.weeklyData[day];
+            const baseGoalCalories = this.settings?.totalCalories || 2700;
+            const dailyAdjustment = dayData.calorieAdjustment || 0;
+            const goalCalories = baseGoalCalories + dailyAdjustment;
+            
+            // Get daily protein level for this day
+            const dailyProteinLevel = dayData.proteinLevel || 0;
+            const proteinTarget = (this.settings?.weight || 70) * dailyProteinLevel;
             
             const calorieAchievement = goalCalories > 0 ? (totals.calories / goalCalories) * 100 : 0;
             
             let status = 'needs-improvement';
             if (calorieAchievement >= 95 && calorieAchievement <= 105) {
                 status = 'excellent';
-            } else if (calorieAchievement >= 85 && calorieAchievement <= 115) {
+            } else if (calorieAchievement >= 90 && calorieAchievement <= 110) {
                 status = 'good';
             }
 
@@ -101,7 +109,8 @@ class NutritionReports {
                 goalCalories,
                 proteinTarget,
                 calorieAchievement,
-                status
+                status,
+                dailyAdjustment
             };
         });
     }
@@ -109,12 +118,17 @@ class NutritionReports {
     updateAchievementStats(weeklyTotals) {
         const totalCalories = weeklyTotals.reduce((sum, day) => sum + day.calories, 0);
         const avgDailyCalories = totalCalories / 7;
-        const goalCalories = this.settings?.totalCalories || 2700;
-        const goalAchievement = goalCalories > 0 ? (avgDailyCalories / goalCalories) * 100 : 0;
         
-        const proteinTarget = (this.settings?.weight || 70) * 1.9;
+        // Calculate average goal based on daily goals
+        const totalGoalCalories = weeklyTotals.reduce((sum, day) => sum + day.goalCalories, 0);
+        const avgGoalCalories = totalGoalCalories / 7;
+        const goalAchievement = avgGoalCalories > 0 ? (avgDailyCalories / avgGoalCalories) * 100 : 0;
+        
+        // Calculate average protein target based on daily protein levels
+        const totalProteinTarget = weeklyTotals.reduce((sum, day) => sum + day.proteinTarget, 0);
+        const avgProteinTarget = totalProteinTarget / 7;
         const avgProtein = weeklyTotals.reduce((sum, day) => sum + day.protein + day.proteinG, 0) / 7;
-        const proteinAchievement = proteinTarget > 0 ? (avgProtein / proteinTarget) * 100 : 0;
+        const proteinAchievement = avgProteinTarget > 0 ? (avgProtein / avgProteinTarget) * 100 : 0;
         
         const daysOnTrack = weeklyTotals.filter(day => 
             day.calorieAchievement >= 95 && day.calorieAchievement <= 105
@@ -133,8 +147,6 @@ class NutritionReports {
         if (this.charts.weeklyCalories) {
             this.charts.weeklyCalories.destroy();
         }
-
-        const goalCalories = this.settings?.totalCalories || 2700;
         
         this.charts.weeklyCalories = new Chart(ctx, {
             type: 'bar',
@@ -157,8 +169,8 @@ class NutritionReports {
                         borderWidth: 2
                     },
                     {
-                        label: 'Goal',
-                        data: new Array(7).fill(goalCalories),
+                        label: 'Daily Goals',
+                        data: weeklyTotals.map(day => day.goalCalories),
                         type: 'line',
                         borderColor: 'rgba(26, 115, 232, 1)',
                         backgroundColor: 'rgba(26, 115, 232, 0.1)',
@@ -199,8 +211,8 @@ class NutritionReports {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><strong>${day.day}</strong></td>
-                <td>${Math.round(day.calories)}</td>
-                <td>${(day.protein + day.proteinG).toFixed(1)}</td>
+                <td>${Math.round(day.calories)} / ${Math.round(day.goalCalories)}${day.dailyAdjustment !== 0 ? ` (${day.dailyAdjustment > 0 ? '+' : ''}${day.dailyAdjustment})` : ''}</td>
+                <td>${(day.protein + day.proteinG).toFixed(1)} / ${Math.round(day.proteinTarget)}</td>
                 <td>${day.fat.toFixed(1)}</td>
                 <td>${day.carbs.toFixed(1)}</td>
                 <td><span class="status-badge status-${day.status}">${statusText[day.status]}</span></td>
@@ -308,19 +320,26 @@ class WeightTracker {
 
     updateWeightStatistics() {
         const currentWeight = this.weightData.length > 0 ? this.weightData[0].weight : 0;
+        const latestWeightChange = this.calculateLatestWeightChange();
         const weightChange = this.calculateWeightChange();
-        const totalWeightChange = this.calculateTotalWeightChange();
+        const avgWeightChange = this.calculateAvgWeightChange();
         const trend = this.calculateTrend();
 
         document.getElementById('currentWeight').textContent = currentWeight ? `${currentWeight.toFixed(1)} kg` : 'No data';
+        document.getElementById('latestWeightChange').textContent = latestWeightChange !== null ? `${latestWeightChange > 0 ? '+' : ''}${latestWeightChange.toFixed(1)} kg` : 'No data';
         document.getElementById('weightChange').textContent = weightChange ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} kg` : 'No change';
-        document.getElementById('totalWeightChange').textContent = totalWeightChange ? `${totalWeightChange > 0 ? '+' : ''}${totalWeightChange.toFixed(1)} kg` : 'No data';
+        document.getElementById('avgWeightChange').textContent = avgWeightChange ? `${avgWeightChange > 0 ? '+' : ''}${avgWeightChange.toFixed(1)} kg/week` : 'No data';
         document.getElementById('weightTrend').textContent = trend;
+    }
+
+    calculateLatestWeightChange() {
+        if (this.weightData.length < 2) return null;
+        return this.weightData[0].weight - this.weightData[1].weight;
     }
 
     calculateWeightChange() {
         if (this.weightData.length < 2) return 0;
-        return this.weightData[0].weight - this.weightData[1].weight;
+        return this.weightData[0].weight - this.weightData[this.weightData.length - 1].weight;
     }
 
     calculateTotalWeightChange() {
@@ -329,6 +348,17 @@ class WeightTracker {
         const currentWeight = this.weightData[0].weight;
         const startingWeight = this.weightData[this.weightData.length - 1].weight;
         return currentWeight - startingWeight;
+    }
+
+    calculateAvgWeightChange() {
+        if (this.weightData.length < 2) return 0;
+        
+        const totalDays = this.weightData.length - 1;
+        const totalChange = this.calculateTotalWeightChange();
+        
+        // Calculate average change per week (7 days)
+        const avgPerDay = totalChange / totalDays;
+        return avgPerDay * 7; // Weekly average
     }
 
     calculateTrend() {
@@ -593,107 +623,125 @@ class ReportsApp {
     constructor() {
         this.nutritionReports = new NutritionReports();
         this.weightTracker = new WeightTracker();
+        this.currentTab = 'nutrition';
         this.init();
     }
 
     init() {
-        // Set up tab switching first
-        this.setupTabSwitching();
-        
-        // Apply tab styling with a small delay to ensure DOM is ready
-        setTimeout(() => {
-            this.ensureNutritionTabActive();
-        }, 100);
-        
         // Initialize nutrition reports immediately (default tab)
         this.nutritionReports.init();
+        
+        // Set up tab switching
+        this.setupTabSwitching();
         
         // Make weight tracker globally accessible
         window.weightTracker = this.weightTracker;
     }
 
-    ensureNutritionTabActive() {
-        // Ensure nutrition tab is active by default
+    setupTabSwitching() {
         const nutritionTab = document.getElementById('nutrition-tab');
-        const nutritionPanel = document.getElementById('nutrition-panel');
         const weightTab = document.getElementById('weight-tab');
+        const nutritionPanel = document.getElementById('nutrition-panel');
         const weightPanel = document.getElementById('weight-panel');
         
-        if (nutritionTab && nutritionPanel && weightTab && weightPanel) {
-            // Set nutrition tab as active
+        if (!nutritionTab || !weightTab || !nutritionPanel || !weightPanel) {
+            console.error('Tab elements not found');
+            return;
+        }
+
+        // Handle nutrition tab click
+        nutritionTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.switchToTab('nutrition');
+        });
+        
+        // Handle weight tab click
+        weightTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.switchToTab('weight');
+        });
+
+        // Also listen for Bootstrap tab events as backup
+        nutritionTab.addEventListener('shown.bs.tab', () => {
+            this.currentTab = 'nutrition';
+        });
+        
+        weightTab.addEventListener('shown.bs.tab', () => {
+            this.currentTab = 'weight';
+            this.weightTracker.init();
+        });
+    }
+
+    switchToTab(tabName) {
+        const nutritionTab = document.getElementById('nutrition-tab');
+        const weightTab = document.getElementById('weight-tab');
+        const nutritionPanel = document.getElementById('nutrition-panel');
+        const weightPanel = document.getElementById('weight-panel');
+
+        // Prevent switching if already on the same tab
+        if (this.currentTab === tabName) {
+            return;
+        }
+
+        this.currentTab = tabName;
+
+        if (tabName === 'nutrition') {
+            // Activate nutrition tab
             nutritionTab.classList.add('active');
             nutritionTab.setAttribute('aria-selected', 'true');
-            
-            // Set nutrition panel as active
             nutritionPanel.classList.add('active', 'show');
             
-            // Ensure weight tab is inactive
+            // Deactivate weight tab
             weightTab.classList.remove('active');
             weightTab.setAttribute('aria-selected', 'false');
-            
-            // Ensure weight panel is inactive
             weightPanel.classList.remove('active', 'show');
             
-            // Apply inline styles as fallback
+        } else if (tabName === 'weight') {
+            // Activate weight tab
+            weightTab.classList.add('active');
+            weightTab.setAttribute('aria-selected', 'true');
+            weightPanel.classList.add('active', 'show');
+            
+            // Deactivate nutrition tab
+            nutritionTab.classList.remove('active');
+            nutritionTab.setAttribute('aria-selected', 'false');
+            nutritionPanel.classList.remove('active', 'show');
+            
+            // Initialize weight tracker if not already done
+            this.weightTracker.init();
+        }
+
+        // Apply visual styles
+        this.applyTabStyles();
+    }
+    
+    applyTabStyles() {
+        const nutritionTab = document.getElementById('nutrition-tab');
+        const weightTab = document.getElementById('weight-tab');
+        
+        if (this.currentTab === 'nutrition') {
             nutritionTab.style.cssText = `
                 color: #1a73e8 !important;
                 border-bottom: 2px solid #1a73e8 !important;
                 background: transparent !important;
             `;
-            
             weightTab.style.cssText = `
                 color: #666 !important;
                 border-bottom: 2px solid transparent !important;
                 background: transparent !important;
             `;
+        } else {
+            weightTab.style.cssText = `
+                color: #1a73e8 !important;
+                border-bottom: 2px solid #1a73e8 !important;
+                background: transparent !important;
+            `;
+            nutritionTab.style.cssText = `
+                color: #666 !important;
+                border-bottom: 2px solid transparent !important;
+                background: transparent !important;
+            `;
         }
-    }
-
-    setupTabSwitching() {
-        const nutritionTab = document.getElementById('nutrition-tab');
-        const weightTab = document.getElementById('weight-tab');
-        
-        if (nutritionTab && weightTab) {
-            // Handle nutrition tab activation
-            nutritionTab.addEventListener('shown.bs.tab', () => {
-                this.applyActiveStyles(nutritionTab, weightTab);
-            });
-            
-            // Handle weight tab activation
-            weightTab.addEventListener('shown.bs.tab', () => {
-                this.applyActiveStyles(weightTab, nutritionTab);
-                this.weightTracker.init();
-            });
-            
-            // Also handle click events as fallback
-            nutritionTab.addEventListener('click', () => {
-                setTimeout(() => this.applyActiveStyles(nutritionTab, weightTab), 50);
-            });
-            
-            weightTab.addEventListener('click', () => {
-                setTimeout(() => this.applyActiveStyles(weightTab, nutritionTab), 50);
-            });
-        }
-    }
-    
-    applyActiveStyles(activeTab, inactiveTab) {
-        // Apply active styles
-        activeTab.classList.add('active');
-        activeTab.setAttribute('aria-selected', 'true');
-        activeTab.style.cssText = `
-            color: #1a73e8 !important;
-            border-bottom: 2px solid #1a73e8 !important;
-            background: transparent !important;
-        `;
-        
-        // Apply inactive styles
-        inactiveTab.classList.remove('active');
-        inactiveTab.setAttribute('aria-selected', 'false');
-        inactiveTab.style.cssText = `
-            color: #666 !important;
-            border-bottom: 2px solid transparent !important;
-            background: transparent !important;
-        `;
     }
 }
 
