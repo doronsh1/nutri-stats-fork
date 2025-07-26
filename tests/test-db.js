@@ -1,4 +1,4 @@
-const { testConnection, initializeDatabase } = require('./src/database/init');
+const { testConnection, initializeDatabase } = require('../src/database/init');
 
 async function testDatabase() {
     console.log('Testing database connection...');

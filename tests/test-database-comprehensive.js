@@ -1,9 +1,9 @@
-const { query, isDatabaseAvailable, dbPath } = require('./src/database/connection');
-const { testConnection, initializeDatabase } = require('./src/database/init');
-const foodService = require('./src/database/foodService');
-const mealService = require('./src/database/mealService');
-const settingsService = require('./src/database/settingsService');
-const weightService = require('./src/database/weightService');
+const { query, isDatabaseAvailable, dbPath } = require('../src/database/connection');
+const { testConnection, initializeDatabase } = require('../src/database/init');
+const foodService = require('../src/database/foodService');
+const mealService = require('../src/database/mealService');
+const settingsService = require('../src/database/settingsService');
+const weightService = require('../src/database/weightService');
 require('dotenv').config();
 
 // Test results tracking
@@ -176,7 +176,7 @@ async function testEnvironmentAndConfiguration() {
         logData('DB_TYPE', dbType);
         logData('DB_PATH', dbPath);
         logData('NODE_ENV', nodeEnv);
-        logData('Database File Path', require('./src/database/connection').dbPath);
+        logData('Database File Path', require('../src/database/connection').dbPath);
         
         logSuccess('Environment configuration loaded successfully');
     } catch (error) {
