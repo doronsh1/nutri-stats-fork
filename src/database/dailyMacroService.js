@@ -49,39 +49,29 @@ class DailyMacroService {
         try {
             const { proteinLevel, fatLevel, calorieAdjustment } = macros;
 
-            // Check if settings exist for this day
-            const existing = await query(
-                'SELECT id FROM user_daily_macros WHERE user_id = ? AND day = ?',
-                [userId, dayName.toLowerCase()]
-            );
-
-            if (existing.rows.length > 0) {
-                // Update existing settings
-                await query(`
-                    UPDATE user_daily_macros 
-                    SET protein_level = ?, fat_level = ?, calorie_adjustment = ?, updated_at = CURRENT_TIMESTAMP
-                    WHERE user_id = ? AND day = ?
-                `, [
-                    proteinLevel,
-                    fatLevel,
-                    calorieAdjustment || 0,
-                    userId,
-                    dayName.toLowerCase()
-                ]);
-            } else {
-                // Insert new settings
-                await query(`
-                    INSERT INTO user_daily_macros 
-                    (user_id, day, protein_level, fat_level, calorie_adjustment)
-                    VALUES (?, ?, ?, ?, ?)
-                `, [
-                    userId,
-                    dayName.toLowerCase(),
-                    proteinLevel,
-                    fatLevel,
-                    calorieAdjustment || 0
-                ]);
-            }
+            // Use INSERT OR REPLACE to handle both insert and update cases
+            // This prevents UNIQUE constraint violations from duplicate requests
+            await query(`
+                INSERT OR REPLACE INTO user_daily_macros 
+                (user_id, day, protein_level, fat_level, calorie_adjustment, created_at, updated_at)
+                VALUES (
+                    ?, 
+                    ?, 
+                    ?, 
+                    ?, 
+                    ?,
+                    COALESCE((SELECT created_at FROM user_daily_macros WHERE user_id = ? AND day = ?), CURRENT_TIMESTAMP),
+                    CURRENT_TIMESTAMP
+                )
+            `, [
+                userId,
+                dayName.toLowerCase(),
+                proteinLevel,
+                fatLevel,
+                calorieAdjustment || 0,
+                userId,
+                dayName.toLowerCase()
+            ]);
 
             console.log(`✅ Daily macros saved for user ${userId}, day ${dayName}: protein=${proteinLevel}, fat=${fatLevel}, calorie=${calorieAdjustment}`);
             return true;

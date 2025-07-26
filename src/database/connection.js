@@ -62,14 +62,34 @@ const query = (sql, params = []) => {
             return;
         }
 
-        db.all(sql, params, (err, rows) => {
-            if (err) {
-                console.error('Database error:', err.message);
-                reject(err);
-            } else {
-                resolve({ rows });
-            }
-        });
+        // Use db.run for INSERT, UPDATE, DELETE operations to get lastInsertRowid and changes
+        if (sql.trim().toUpperCase().startsWith('INSERT') || 
+            sql.trim().toUpperCase().startsWith('UPDATE') || 
+            sql.trim().toUpperCase().startsWith('DELETE')) {
+            
+            db.run(sql, params, function(err) {
+                if (err) {
+                    console.error('Database error:', err.message);
+                    reject(err);
+                } else {
+                    resolve({ 
+                        rows: [], 
+                        lastInsertRowid: this.lastID,
+                        changes: this.changes 
+                    });
+                }
+            });
+        } else {
+            // Use db.all for SELECT operations
+            db.all(sql, params, (err, rows) => {
+                if (err) {
+                    console.error('Database error:', err.message);
+                    reject(err);
+                } else {
+                    resolve({ rows });
+                }
+            });
+        }
     });
 };
 

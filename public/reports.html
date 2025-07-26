@@ -10,30 +10,88 @@
     <link rel="stylesheet" href="/css/components/navbar.css">
     <link rel="stylesheet" href="/css/pages/reports.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Tab System */
+        .custom-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 2rem;
+        }
+        
+        .custom-tab-button {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            margin-right: 8px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-tab-button:hover {
+            color: #1a73e8;
+            background-color: #f8f9fa;
+        }
+        
+        .custom-tab-button.active {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+            background-color: transparent;
+        }
+        
+        .report-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .report-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Chart container improvements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+        }
+        
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Ensure cards resize properly */
+        .card-body {
+            min-height: 200px;
+        }
+    </style>
+
 </head>
 <body>
     <!-- Navigation will be loaded dynamically -->
     
     <div class="main-section">
         <div class="container mt-3">
-            <!-- Report Tabs Navigation -->
-            <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="nutrition-tab" data-bs-toggle="tab" data-bs-target="#nutrition-panel" type="button" role="tab" aria-controls="nutrition-panel" aria-selected="true">
-                        <i class="bi bi-bar-chart-fill"></i> Nutrition Report
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="weight-tab" data-bs-toggle="tab" data-bs-target="#weight-panel" type="button" role="tab" aria-controls="weight-panel" aria-selected="false">
-                        <i class="bi bi-speedometer2"></i> Weight Tracking
-                    </button>
-                </li>
-            </ul>
+            <!-- Custom Tab Navigation -->
+            <div class="custom-tabs">
+                <button class="custom-tab-button active" id="nutrition-tab" data-target="nutrition-section">
+                    <i class="bi bi-bar-chart-fill"></i> Nutrition Report
+                </button>
+                <button class="custom-tab-button" id="weight-tab" data-target="weight-section">
+                    <i class="bi bi-speedometer2"></i> Weight Tracking
+                </button>
+            </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content" id="reportTabsContent">
-                <!-- Nutrition Report Panel -->
-                <div class="tab-pane fade show active" id="nutrition-panel" role="tabpanel" aria-labelledby="nutrition-tab">
+            <!-- Report Sections -->
+            <div id="reports-container">
+                <!-- Nutrition Report Section -->
+                <div class="report-section active" id="nutrition-section">
                     <div class="nutrition-content">
                         <!-- Weekly Calorie Achievement Chart -->
                         <div class="row mb-4">
@@ -43,14 +101,16 @@
                                         <h5><i class="bi bi-bar-chart"></i> Weekly Calorie Achievement</h5>
                                     </div>
                                     <div class="card-body">
-                                        <canvas id="weeklyCaloriesChart" width="400" height="200"></canvas>
+                                        <div class="chart-container">
+                                            <canvas id="weeklyCaloriesChart"></canvas>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h5><i class="bi bi-target"></i> Goal Achievement</h5>
+                                        <h5><i class="bi bi-target"></i> Weekly Goal Achievement</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="achievement-stats">
@@ -108,8 +168,8 @@
                     </div>
                 </div>
 
-                <!-- Weight Tracking Panel -->
-                <div class="tab-pane fade" id="weight-panel" role="tabpanel" aria-labelledby="weight-tab">
+                <!-- Weight Tracking Section -->
+                <div class="report-section" id="weight-section">
                     <div class="weight-content">
                         <!-- Weight Statistics Cards -->
                         <div class="row mb-4 g-3">
@@ -163,7 +223,7 @@
                                         <h5><i class="bi bi-graph-up"></i> Weight Progress</h5>
                                     </div>
                                     <div class="card-body">
-                                        <div style="height: 400px; width: 100%;">
+                                        <div class="chart-container">
                                             <canvas id="weightChart"></canvas>
                                         </div>
                                     </div>

@@ -45,19 +45,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const proteinLevelInput = document.getElementById('proteinLevelInput');
     const fatLevelInput = document.getElementById('fatLevelInput');
     proteinLevelInput.addEventListener('input', () => {
-        calculateMacroStats();
-        saveMacroSettings();
+        calculateMacroStats(); // This already calls saveMacroSettings()
     });
     fatLevelInput.addEventListener('input', () => {
-        calculateMacroStats();
-        saveMacroSettings();
+        calculateMacroStats(); // This already calls saveMacroSettings()
     });
 
     // Add calorie adjustment input event listener
     const calorieAdjustmentInput = document.getElementById('calorieAdjustmentInput');
     calorieAdjustmentInput.addEventListener('input', () => {
         applyCalorieAdjustment();
-        calculateMacroStats();
-        saveMacroSettings();
+        calculateMacroStats(); // This already calls saveMacroSettings()
     });
 });

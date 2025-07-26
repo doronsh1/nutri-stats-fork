@@ -8,15 +8,21 @@ class NutritionReports {
     }
 
     async init() {
-        if (this.initialized) return;
-        
+        if (this.initialized) {
+            console.log('NutritionReports already initialized, skipping');
+            return;
+        }
+
         try {
+            console.log('Initializing NutritionReports...');
             await this.loadSettings();
             await this.loadWeeklyData();
             this.generateWeeklyReport();
             this.initialized = true;
+            console.log('NutritionReports initialized successfully');
         } catch (error) {
             console.error('NutritionReports: Initialization failed:', error);
+            this.initialized = false; // Reset on failure
         }
     }
 
@@ -31,7 +37,7 @@ class NutritionReports {
 
     async loadWeeklyData() {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        
+
         for (const day of days) {
             try {
                 const response = await API.meals.get(day);
@@ -79,22 +85,22 @@ class NutritionReports {
     calculateWeeklyTotals() {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        
+
         return days.map((day, index) => {
             const totals = this.calculateDayTotals(this.weeklyData[day]);
-            
+
             // Get daily macro settings for this day
             const dayData = this.weeklyData[day];
             const baseGoalCalories = this.settings?.totalCalories || 2700;
             const dailyAdjustment = dayData.calorieAdjustment || 0;
             const goalCalories = baseGoalCalories + dailyAdjustment;
-            
+
             // Get daily protein level for this day
             const dailyProteinLevel = dayData.proteinLevel || 0;
             const proteinTarget = (this.settings?.weight || 70) * dailyProteinLevel;
-            
+
             const calorieAchievement = goalCalories > 0 ? (totals.calories / goalCalories) * 100 : 0;
-            
+
             let status = 'needs-improvement';
             if (calorieAchievement >= 95 && calorieAchievement <= 105) {
                 status = 'excellent';
@@ -118,19 +124,19 @@ class NutritionReports {
     updateAchievementStats(weeklyTotals) {
         const totalCalories = weeklyTotals.reduce((sum, day) => sum + day.calories, 0);
         const avgDailyCalories = totalCalories / 7;
-        
+
         // Calculate average goal based on daily goals
         const totalGoalCalories = weeklyTotals.reduce((sum, day) => sum + day.goalCalories, 0);
         const avgGoalCalories = totalGoalCalories / 7;
         const goalAchievement = avgGoalCalories > 0 ? (avgDailyCalories / avgGoalCalories) * 100 : 0;
-        
+
         // Calculate average protein target based on daily protein levels
         const totalProteinTarget = weeklyTotals.reduce((sum, day) => sum + day.proteinTarget, 0);
         const avgProteinTarget = totalProteinTarget / 7;
         const avgProtein = weeklyTotals.reduce((sum, day) => sum + day.protein + day.proteinG, 0) / 7;
         const proteinAchievement = avgProteinTarget > 0 ? (avgProtein / avgProteinTarget) * 100 : 0;
-        
-        const daysOnTrack = weeklyTotals.filter(day => 
+
+        const daysOnTrack = weeklyTotals.filter(day =>
             day.calorieAchievement >= 95 && day.calorieAchievement <= 105
         ).length;
 
@@ -147,7 +153,7 @@ class NutritionReports {
         if (this.charts.weeklyCalories) {
             this.charts.weeklyCalories.destroy();
         }
-        
+
         this.charts.weeklyCalories = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -182,6 +188,7 @@ class NutritionReports {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false }
                 },
@@ -192,6 +199,22 @@ class NutritionReports {
                     }
                 }
             }
+        });
+
+        // Add resize listener for proper chart resizing
+        this.setupResizeListener();
+    }
+
+    setupResizeListener() {
+        // Debounce resize events to avoid excessive calls
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (this.charts.weeklyCalories) {
+                    this.charts.weeklyCalories.resize();
+                }
+            }, 250);
         });
     }
 
@@ -232,9 +255,13 @@ class WeightTracker {
     }
 
     async init() {
-        if (this.initialized) return;
-        
+        if (this.initialized) {
+            console.log('WeightTracker already initialized, skipping');
+            return;
+        }
+
         try {
+            console.log('Initializing WeightTracker...');
             await this.loadSettings();
             await this.loadWeightData();
             this.setupEventListeners();
@@ -242,8 +269,10 @@ class WeightTracker {
             this.createWeightChart();
             this.updateWeightTable();
             this.initialized = true;
+            console.log('WeightTracker initialized successfully');
         } catch (error) {
             console.error('WeightTracker: Initialization failed:', error);
+            this.initialized = false; // Reset on failure
         }
     }
 
@@ -352,10 +381,10 @@ class WeightTracker {
 
     calculateAvgWeightChange() {
         if (this.weightData.length < 2) return 0;
-        
+
         const totalDays = this.weightData.length - 1;
         const totalChange = this.calculateTotalWeightChange();
-        
+
         // Calculate average change per week (7 days)
         const avgPerDay = totalChange / totalDays;
         return avgPerDay * 7; // Weekly average
@@ -363,12 +392,12 @@ class WeightTracker {
 
     calculateTrend() {
         if (this.weightData.length < 3) return 'Insufficient data';
-        
+
         const recent = this.weightData.slice(0, 3);
         const total = recent.reduce((sum, entry) => sum + entry.weight, 0);
         const average = total / recent.length;
         const latest = recent[0].weight;
-        
+
         if (latest > average + 0.5) return '↗️ Increasing';
         if (latest < average - 0.5) return '↘️ Decreasing';
         return '↔️ Stable';
@@ -385,7 +414,7 @@ class WeightTracker {
         const chartData = this.weightData.slice().reverse();
         const labels = chartData.map(entry => new Date(entry.date).toLocaleDateString());
         const weights = chartData.map(entry => entry.weight);
-        
+
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -426,6 +455,22 @@ class WeightTracker {
                 }
             }
         });
+
+        // Add resize listener for proper chart resizing
+        this.setupWeightChartResizeListener();
+    }
+
+    setupWeightChartResizeListener() {
+        // Debounce resize events to avoid excessive calls
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (this.chart) {
+                    this.chart.resize();
+                }
+            }, 250);
+        });
     }
 
     updateWeightChart() {
@@ -454,11 +499,11 @@ class WeightTracker {
         this.weightData.forEach((entry, index) => {
             const row = document.createElement('tr');
             row.setAttribute('data-entry-id', entry.id);
-            
-            const change = index < this.weightData.length - 1 ? 
+
+            const change = index < this.weightData.length - 1 ?
                 entry.weight - this.weightData[index + 1].weight : 0;
 
-            const changeText = change !== 0 ? 
+            const changeText = change !== 0 ?
                 `${change > 0 ? '+' : ''}${change.toFixed(1)} kg` : '-';
 
             const changeClass = change > 0 ? 'text-danger' : change < 0 ? 'text-success' : '';
@@ -497,7 +542,7 @@ class WeightTracker {
                     </div>
                 </td>
             `;
-            
+
             tbody.appendChild(row);
 
             // Add event listeners for this row
@@ -534,12 +579,12 @@ class WeightTracker {
     // Handle saving inline edit
     async handleSaveInline(row) {
         const entryId = row.getAttribute('data-entry-id');
-        
+
         // Select inputs by their type for more reliability
         const dateInput = row.querySelector('input[type="date"]');
         const weightInput = row.querySelector('input[type="number"]');
         const noteInput = row.querySelector('input[type="text"]');
-        
+
         const updatedEntry = {
             date: dateInput.value,
             weight: parseFloat(weightInput.value),
@@ -584,19 +629,19 @@ class WeightTracker {
 
         try {
             await API.weight.delete(id);
-            
+
             // Immediate UI update - remove the row
             if (row) {
                 row.remove();
             }
-            
+
             // Update local data
             this.weightData = this.weightData.filter(entry => entry.id !== id);
-            
+
             // Update statistics and chart with existing data
             this.updateWeightStatistics();
             this.updateWeightChart();
-            
+
             // Show empty state if no entries left
             if (this.weightData.length === 0) {
                 const tbody = document.querySelector('#weightEntriesTable tbody');
@@ -604,11 +649,11 @@ class WeightTracker {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center">No weight entries yet. Add your first entry above.</td></tr>';
                 }
             }
-            
+
         } catch (error) {
             console.error('Error deleting weight entry:', error);
             alert('Error deleting weight entry');
-            
+
             // Restore the row if delete failed
             if (row) {
                 row.style.opacity = '1';
@@ -621,131 +666,244 @@ class WeightTracker {
 // Application Manager
 class ReportsApp {
     constructor() {
+        // Set global reference immediately to prevent double initialization
+        window.reportsApp = this;
+
         this.nutritionReports = new NutritionReports();
         this.weightTracker = new WeightTracker();
         this.currentTab = 'nutrition';
+        this.isInitialized = false;
+        this.pendingTabSwitch = null;
+
+        console.log('ReportsApp constructor called');
         this.init();
     }
 
-    init() {
-        // Initialize nutrition reports immediately (default tab)
-        this.nutritionReports.init();
-        
+    async init() {
+        // Wait for DOM to be fully ready
+        await this.waitForDOM();
+
+        // Ensure proper initial state
+        this.ensureInitialTabState();
+
         // Set up tab switching
         this.setupTabSwitching();
-        
+
+        // Initialize nutrition reports (default tab)
+        await this.nutritionReports.init();
+
+        // Mark as initialized
+        this.isInitialized = true;
+
+        // Process any pending tab switch
+        if (this.pendingTabSwitch) {
+            this.switchToTab(this.pendingTabSwitch);
+            this.pendingTabSwitch = null;
+        }
+
         // Make weight tracker globally accessible
         window.weightTracker = this.weightTracker;
+
+        // Make app instance globally accessible
+        window.reportsApp = this;
+
+        // Set up comprehensive chart resize handling
+        this.setupGlobalResizeHandler();
+    }
+
+    waitForDOM() {
+        return new Promise((resolve) => {
+            if (document.readyState === 'complete') {
+                resolve();
+            } else {
+                const checkReady = () => {
+                    if (document.readyState === 'complete') {
+                        resolve();
+                    } else {
+                        setTimeout(checkReady, 10);
+                    }
+                };
+                checkReady();
+            }
+        });
+    }
+
+    ensureInitialTabState() {
+        const nutritionTab = document.getElementById('nutrition-tab');
+        const weightTab = document.getElementById('weight-tab');
+        const nutritionSection = document.getElementById('nutrition-section');
+        const weightSection = document.getElementById('weight-section');
+
+        if (nutritionTab && weightTab && nutritionSection && weightSection) {
+            console.log('Setting initial tab state');
+
+            // Deactivate all tabs
+            nutritionTab.classList.remove('active');
+            weightTab.classList.remove('active');
+
+            // Hide all sections
+            nutritionSection.classList.remove('active');
+            weightSection.classList.remove('active');
+
+            // Activate nutrition tab (default)
+            nutritionTab.classList.add('active');
+            nutritionSection.classList.add('active');
+
+            console.log('Initial tab state set to nutrition');
+        } else {
+            console.error('Initial tab elements not found:', {
+                nutritionTab: !!nutritionTab,
+                weightTab: !!weightTab,
+                nutritionSection: !!nutritionSection,
+                weightSection: !!weightSection
+            });
+        }
     }
 
     setupTabSwitching() {
         const nutritionTab = document.getElementById('nutrition-tab');
         const weightTab = document.getElementById('weight-tab');
-        const nutritionPanel = document.getElementById('nutrition-panel');
-        const weightPanel = document.getElementById('weight-panel');
-        
-        if (!nutritionTab || !weightTab || !nutritionPanel || !weightPanel) {
-            console.error('Tab elements not found');
+
+        if (!nutritionTab || !weightTab) {
+            console.error('Tab buttons not found');
             return;
         }
+
+        console.log('Setting up custom tab switching');
 
         // Handle nutrition tab click
         nutritionTab.addEventListener('click', (e) => {
             e.preventDefault();
+            console.log('Nutrition tab clicked');
             this.switchToTab('nutrition');
         });
-        
+
         // Handle weight tab click
         weightTab.addEventListener('click', (e) => {
             e.preventDefault();
+            console.log('Weight tab clicked');
             this.switchToTab('weight');
-        });
-
-        // Also listen for Bootstrap tab events as backup
-        nutritionTab.addEventListener('shown.bs.tab', () => {
-            this.currentTab = 'nutrition';
-        });
-        
-        weightTab.addEventListener('shown.bs.tab', () => {
-            this.currentTab = 'weight';
-            this.weightTracker.init();
         });
     }
 
     switchToTab(tabName) {
-        const nutritionTab = document.getElementById('nutrition-tab');
-        const weightTab = document.getElementById('weight-tab');
-        const nutritionPanel = document.getElementById('nutrition-panel');
-        const weightPanel = document.getElementById('weight-panel');
-
-        // Prevent switching if already on the same tab
-        if (this.currentTab === tabName) {
+        // If not initialized yet, queue the tab switch
+        if (!this.isInitialized) {
+            this.pendingTabSwitch = tabName;
+            console.log(`Queuing tab switch to: ${tabName}`);
             return;
         }
 
+        // Prevent switching if already on the same tab
+        if (this.currentTab === tabName) {
+            console.log(`Already on ${tabName} tab, skipping`);
+            return;
+        }
+
+        console.log(`Switching from ${this.currentTab} to ${tabName}`);
+
+        // Get tab buttons
+        const nutritionTab = document.getElementById('nutrition-tab');
+        const weightTab = document.getElementById('weight-tab');
+
+        // Get report sections
+        const nutritionSection = document.getElementById('nutrition-section');
+        const weightSection = document.getElementById('weight-section');
+
+        // Validate elements exist
+        if (!nutritionTab || !weightTab || !nutritionSection || !weightSection) {
+            console.error('Required elements not found:', {
+                nutritionTab: !!nutritionTab,
+                weightTab: !!weightTab,
+                nutritionSection: !!nutritionSection,
+                weightSection: !!weightSection
+            });
+            return;
+        }
+
+        // Update current tab
         this.currentTab = tabName;
 
+        // STEP 1: Deactivate all tab buttons
+        nutritionTab.classList.remove('active');
+        weightTab.classList.remove('active');
+
+        // STEP 2: Hide all sections
+        nutritionSection.classList.remove('active');
+        weightSection.classList.remove('active');
+
+        // STEP 3: Activate the selected tab and section
         if (tabName === 'nutrition') {
-            // Activate nutrition tab
             nutritionTab.classList.add('active');
-            nutritionTab.setAttribute('aria-selected', 'true');
-            nutritionPanel.classList.add('active', 'show');
-            
-            // Deactivate weight tab
-            weightTab.classList.remove('active');
-            weightTab.setAttribute('aria-selected', 'false');
-            weightPanel.classList.remove('active', 'show');
-            
+            nutritionSection.classList.add('active');
+            console.log('Nutrition section activated');
+
         } else if (tabName === 'weight') {
-            // Activate weight tab
             weightTab.classList.add('active');
-            weightTab.setAttribute('aria-selected', 'true');
-            weightPanel.classList.add('active', 'show');
-            
-            // Deactivate nutrition tab
-            nutritionTab.classList.remove('active');
-            nutritionTab.setAttribute('aria-selected', 'false');
-            nutritionPanel.classList.remove('active', 'show');
-            
+            weightSection.classList.add('active');
+            console.log('Weight section activated');
+
             // Initialize weight tracker if not already done
             this.weightTracker.init();
         }
 
-        // Apply visual styles
-        this.applyTabStyles();
+        console.log(`Successfully switched to ${tabName} tab`);
     }
-    
-    applyTabStyles() {
-        const nutritionTab = document.getElementById('nutrition-tab');
-        const weightTab = document.getElementById('weight-tab');
-        
-        if (this.currentTab === 'nutrition') {
-            nutritionTab.style.cssText = `
-                color: #1a73e8 !important;
-                border-bottom: 2px solid #1a73e8 !important;
-                background: transparent !important;
-            `;
-            weightTab.style.cssText = `
-                color: #666 !important;
-                border-bottom: 2px solid transparent !important;
-                background: transparent !important;
-            `;
-        } else {
-            weightTab.style.cssText = `
-                color: #1a73e8 !important;
-                border-bottom: 2px solid #1a73e8 !important;
-                background: transparent !important;
-            `;
-            nutritionTab.style.cssText = `
-                color: #666 !important;
-                border-bottom: 2px solid transparent !important;
-                background: transparent !important;
-            `;
-        }
+
+    setupGlobalResizeHandler() {
+        let resizeTimeout;
+
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                console.log('Window resized, updating charts...');
+
+                // Resize nutrition chart if it exists and is visible
+                if (this.nutritionReports.charts.weeklyCalories && this.currentTab === 'nutrition') {
+                    this.nutritionReports.charts.weeklyCalories.resize();
+                    console.log('Nutrition chart resized');
+                }
+
+                // Resize weight chart if it exists and is visible
+                if (this.weightTracker.chart && this.currentTab === 'weight') {
+                    this.weightTracker.chart.resize();
+                    console.log('Weight chart resized');
+                }
+
+                // Force resize both charts regardless of current tab (for better reliability)
+                setTimeout(() => {
+                    if (this.nutritionReports.charts.weeklyCalories) {
+                        this.nutritionReports.charts.weeklyCalories.resize();
+                    }
+                    if (this.weightTracker.chart) {
+                        this.weightTracker.chart.resize();
+                    }
+                }, 100);
+
+            }, 300); // Slightly longer debounce for better performance
+        });
     }
+
+
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    new ReportsApp();
+    if (!window.reportsApp) {
+        console.log('Creating ReportsApp instance');
+        window.reportsApp = new ReportsApp();
+    } else {
+        console.log('ReportsApp already exists, skipping initialization');
+    }
+});
+
+// Also initialize on window load as backup for slow connections
+window.addEventListener('load', () => {
+    // Only initialize if not already done
+    if (!window.reportsApp) {
+        console.log('Creating ReportsApp instance on window load');
+        window.reportsApp = new ReportsApp();
+    } else {
+        console.log('ReportsApp already exists on window load, skipping');
+    }
 }); 

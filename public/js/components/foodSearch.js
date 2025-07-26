@@ -211,14 +211,21 @@ class FoodSearch {
             });
         }
 
-        // Trigger change event on amount input to recalculate totals
+        // Trigger change event on amount input to recalculate totals and save data
         if (amountInput) {
             const event = new Event('change');
             amountInput.dispatchEvent(event);
         }
 
-        // Don't save immediately after food selection - let amount change trigger the save
-        // This prevents race conditions between food selection and amount changes
+        // Add a small delay to ensure the amount change event has been processed
+        // then force a save to ensure the food selection with amount is persisted
+        setTimeout(async () => {
+            if (window.saveMealData && typeof window.saveMealData === 'function') {
+                console.log('🔍 Ensuring food selection is saved after selection');
+                await window.saveMealData(row);
+            }
+        }, 100);
+
         console.log('🔍 Food selection completed - Amount:', amountInput?.value, 'Base amount:', amountInput?.getAttribute('data-base-amount'));
     }
 }

@@ -30,20 +30,20 @@ class MealService {
                 WHERE user_id = ? AND day = ?
                 ORDER BY meal_time, id
             `, [userId, dayName.toLowerCase()]);
-            
+
             // Group meals by meal_time with correct ID mapping
             const defaultTimes = ["08:00", "11:00", "14:00", "17:00", "20:00", "23:00"];
             const mealsByTime = {};
-            
+
             // Group by meal_id instead of meal_time for better organization
             const mealsById = {};
-            
+
             result.rows.forEach(row => {
                 const mealId = row.meal_id;
-                
+
                 // Skip rows without meal_id (old data)
                 if (!mealId) return;
-                
+
                 if (!mealsById[mealId]) {
                     mealsById[mealId] = {
                         id: mealId,
@@ -51,7 +51,7 @@ class MealService {
                         items: []
                     };
                 }
-                
+
                 // Check if this is a placeholder
                 if (row.food_item.startsWith('__MEAL_TIME_PLACEHOLDER__MEAL_')) {
                     mealsById[mealId].time = row.meal_time;
@@ -77,11 +77,11 @@ class MealService {
                     });
                 }
             });
-            
+
             // Convert to array format expected by frontend
             const fallbackTimes = ["08:00", "11:00", "14:00", "17:00", "20:00", "23:00"];
             const finalMeals = [];
-            
+
             // Build final meals array using meal_id
             for (let i = 1; i <= 6; i++) {
                 if (mealsById[i]) {
@@ -95,9 +95,9 @@ class MealService {
                     });
                 }
             }
-            
+
             const resultMeals = finalMeals;
-            
+
             // Get daily macro settings for this specific day
             let macroSettings = { proteinLevel: null, fatLevel: null, calorieAdjustment: 0 };
             try {
@@ -105,7 +105,7 @@ class MealService {
             } catch (settingsError) {
                 console.log('Using default macro settings:', settingsError.message);
             }
-            
+
             return {
                 ...macroSettings,
                 meals: resultMeals
@@ -140,14 +140,14 @@ class MealService {
                     const defaultTimes = ["08:00", "11:00", "14:00", "17:00", "20:00", "23:00"];
                     let closestMealId = 1;
                     let minDifference = Infinity;
-                    
+
                     for (let i = 0; i < defaultTimes.length; i++) {
                         const defaultTime = defaultTimes[i];
                         const timeDiff = Math.abs(
                             (parseInt(mealTime.split(':')[0]) * 60 + parseInt(mealTime.split(':')[1])) -
                             (parseInt(defaultTime.split(':')[0]) * 60 + parseInt(defaultTime.split(':')[1]))
                         );
-                        
+
                         if (timeDiff < minDifference) {
                             minDifference = timeDiff;
                             closestMealId = i + 1;
@@ -163,8 +163,11 @@ class MealService {
                 WHERE user_id = ? AND day = ? AND meal_time = ? AND food_item LIKE '__MEAL_TIME_PLACEHOLDER__MEAL_%'
             `, [userId, dayName.toLowerCase(), mealTime]);
 
+            // Ensure amount is properly set - use amount or baseAmount, whichever is available
+            const finalAmount = itemData.amount || itemData.baseAmount || 0;
+
             // Add the actual food item with meal_id
-            await query(`
+            const result = await query(`
                 INSERT INTO user_meals (user_id, day, meal_time, meal_id, food_item, amount, calories, carbs, protein, protein_general, fat)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
@@ -173,16 +176,26 @@ class MealService {
                 mealTime,
                 mealId,
                 itemData.name,
-                itemData.amount || 0,
+                finalAmount,
                 itemData.calories || 0,
                 itemData.carbs || 0,
                 itemData.protein || 0,
                 itemData.proteinG || 0,
                 itemData.fat || 0
             ]);
-            
-            console.log('✅ Meal item added to database:', itemData.name);
-            return { id: Date.now(), ...itemData };
+
+            const newId = result.lastInsertRowid || Date.now();
+
+            console.log('✅ Meal item added to database:', {
+                name: itemData.name,
+                amount: finalAmount,
+                originalAmount: itemData.amount,
+                baseAmount: itemData.baseAmount,
+                newId: newId,
+                lastInsertRowid: result.lastInsertRowid
+            });
+
+            return { id: newId, ...itemData, amount: finalAmount };
         } catch (error) {
             console.error('❌ Database error adding meal item:', error.message);
             return null;
@@ -197,26 +210,71 @@ class MealService {
         }
 
         try {
-            await query(`
+            // First, let's check if the record exists
+            const existingRecord = await query(`
+                SELECT * FROM user_meals WHERE id = ? AND user_id = ? AND day = ?
+            `, [itemId, userId, dayName.toLowerCase()]);
+
+            console.log('🔍 Looking for record with ID:', itemId, 'User:', userId, 'Day:', dayName.toLowerCase());
+            console.log('🔍 Found records:', existingRecord.rows.length);
+
+            if (existingRecord.rows.length === 0) {
+                console.log('❌ No record found with the given criteria');
+                // Let's try to find records for this user and day
+                const allRecords = await query(`
+                    SELECT id, food_item, amount FROM user_meals WHERE user_id = ? AND day = ?
+                `, [userId, dayName.toLowerCase()]);
+                console.log('🔍 All records for this user/day:', allRecords.rows);
+                return null;
+            }
+
+            console.log('🔍 Existing record before update:', existingRecord.rows[0]);
+
+            // Ensure amount is properly set - use amount or baseAmount, whichever is available
+            const finalAmount = itemData.amount || itemData.baseAmount || 0;
+
+            const result = await query(`
                 UPDATE user_meals 
-                SET food_item = ?, amount = ?, calories = ?, carbs = ?, protein = ?, protein_general = ?, fat = ?
-                WHERE id = ? AND user_id = ? AND day = ? AND meal_time = ?
+                SET food_item = ?, amount = ?, calories = ?, carbs = ?, protein = ?, protein_general = ?, fat = ?, meal_time = ?
+                WHERE id = ? AND user_id = ? AND day = ?
             `, [
                 itemData.name,
-                itemData.amount || 0,
+                finalAmount,
                 itemData.calories || 0,
                 itemData.carbs || 0,
                 itemData.protein || 0,
                 itemData.proteinG || 0,
                 itemData.fat || 0,
+                mealTime,
                 itemId,
                 userId,
-                dayName.toLowerCase(),
-                mealTime
+                dayName.toLowerCase()
             ]);
-            
-            console.log('✅ Meal item updated in database:', itemData.name);
-            return { id: itemId, ...itemData };
+
+            console.log('✅ Meal item updated in database:', {
+                name: itemData.name,
+                amount: finalAmount,
+                originalAmount: itemData.amount,
+                baseAmount: itemData.baseAmount,
+                itemId: itemId,
+                rowsAffected: result.changes,
+                userId: userId,
+                day: dayName.toLowerCase(),
+                mealTime: mealTime
+            });
+
+            // Verify the update by querying the record
+            const verifyResult = await query(`
+                SELECT amount FROM user_meals WHERE id = ? AND user_id = ?
+            `, [itemId, userId]);
+
+            if (verifyResult.rows.length > 0) {
+                console.log('🔍 Verification - Amount in DB after update:', verifyResult.rows[0].amount);
+            } else {
+                console.log('⚠️ Verification failed - Record not found after update');
+            }
+
+            return { id: itemId, ...itemData, amount: finalAmount };
         } catch (error) {
             console.error('❌ Database error updating meal item:', error.message);
             return null;
@@ -236,7 +294,7 @@ class MealService {
                 DELETE FROM user_meals 
                 WHERE id = ? AND user_id = ? AND day = ? AND meal_time = ?
             `, [itemId, userId, dayName.toLowerCase(), mealTime]);
-            
+
             // Check if this was the last real food item for this meal time
             const remainingItems = await query(`
                 SELECT COUNT(*) as count FROM user_meals 
@@ -263,7 +321,7 @@ class MealService {
                     console.log('✅ Custom meal time preserved with placeholder:', mealTime);
                 }
             }
-            
+
             console.log('✅ Meal item deleted from database, ID:', itemId);
             return true;
         } catch (error) {
@@ -285,7 +343,7 @@ class MealService {
                 DELETE FROM user_meals 
                 WHERE user_id = ? AND day = ? AND meal_id = ? AND food_item NOT LIKE '__MEAL_TIME_PLACEHOLDER__%'
             `, [userId, dayName.toLowerCase(), mealId]);
-            
+
             console.log(`✅ Deleted all items from meal ${mealId} for ${dayName}`);
             return true;
         } catch (error) {
@@ -308,7 +366,7 @@ class MealService {
                 SET meal_time = ?
                 WHERE user_id = ? AND day = ? AND meal_id = ? AND food_item NOT LIKE '__MEAL_TIME_PLACEHOLDER__%'
             `, [newMealTime, userId, dayName.toLowerCase(), mealId]);
-            
+
             console.log(`✅ Updated meal ${mealId} food items to ${newMealTime}`);
 
             // Check if there are any real food items for this meal ID
@@ -363,11 +421,11 @@ class MealService {
                 WHERE user_id = ? AND day = ? AND food_item LIKE '__MEAL_TIME_PLACEHOLDER__MEAL_%'
                 ORDER BY meal_id, id
             `, [userId, dayName.toLowerCase()]);
-            
+
             // Group by meal_id and keep only the latest one
             const toDelete = [];
             const seen = new Set();
-            
+
             for (const row of result.rows) {
                 const key = `${row.meal_id}`;
                 if (seen.has(key)) {
@@ -376,17 +434,17 @@ class MealService {
                     seen.add(key);
                 }
             }
-            
+
             if (toDelete.length > 0) {
                 // Delete duplicates
                 await query(`
                     DELETE FROM user_meals 
                     WHERE id IN (${toDelete.map(() => '?').join(',')})
                 `, toDelete);
-                
+
                 console.log(`🧹 Cleaned up ${toDelete.length} duplicate placeholders for ${dayName}`);
             }
-            
+
             return true;
         } catch (error) {
             console.error('❌ Cleanup failed:', error.message);
@@ -430,7 +488,7 @@ class MealService {
                 ]);
                 console.log('✅ Meal time placeholder created in database:', `${oldMealTime} -> ${newMealTime}`);
             }
-            
+
             return true;
         } catch (error) {
             console.error('❌ Database error updating meal time:', error.message);
@@ -441,7 +499,7 @@ class MealService {
     // Get default day meals structure
     async getDefaultDayMeals(userId = null) {
         const defaultTimes = ["08:00", "11:00", "14:00", "17:00", "20:00", "23:00"];
-        
+
         // Get macro settings from daily macro service if userId provided
         let macroSettings = { proteinLevel: null, fatLevel: null, calorieAdjustment: 0 };
         if (userId) {
@@ -453,7 +511,7 @@ class MealService {
                 console.log('Using default macro settings for default meals:', settingsError.message);
             }
         }
-        
+
         return {
             ...macroSettings,
             meals: defaultTimes.map((time, index) => ({
