@@ -231,14 +231,105 @@ class NutritionReports {
                 'needs-improvement': 'Needs Improvement'
             };
 
+            // Calculate macro achievement percentages
+            const totalProtein = day.protein + day.proteinG;
+            const proteinAchievement = day.proteinTarget > 0 ? (totalProtein / day.proteinTarget) * 100 : 0;
+
+            // For fat and carbs, we need to calculate targets based on daily macro settings
+            // Get the daily macro data to calculate fat and carb targets
+            const dayData = this.weeklyData[day.dayKey] || {};
+            const userWeight = this.settings?.weight || 70;
+            const dailyFatLevel = dayData.fatLevel || 0;
+            const fatTarget = userWeight * dailyFatLevel;
+            const fatAchievement = fatTarget > 0 ? (day.fat / fatTarget) * 100 : 0;
+
+            // For carbs, calculate remaining calories after protein and fat
+            const proteinCalories = totalProtein * 4;
+            const fatCalories = day.fat * 9;
+            const remainingCalories = Math.max(0, day.goalCalories - proteinCalories - fatCalories);
+            const carbTarget = remainingCalories / 4;
+            const carbAchievement = carbTarget > 0 ? (day.carbs / carbTarget) * 100 : 0;
+
+            // Helper function to get status class based on achievement percentage
+            const getStatusClass = (achievement) => {
+                if (achievement >= 95 && achievement <= 105) return 'status-excellent';
+                if (achievement >= 90 && achievement <= 110) return 'status-good';
+                return 'status-needs-improvement';
+            };
+
+            // Helper function to get background color for cells
+            const getBackgroundColor = (achievement) => {
+                if (achievement >= 95 && achievement <= 105) return '#d4edda'; // Green
+                if (achievement >= 90 && achievement <= 110) return '#fff3cd'; // Yellow
+                return '#f8d7da'; // Red
+            };
+
+            // Calculate calorie achievement percentage
+            const calorieAchievement = day.goalCalories > 0 ? (day.calories / day.goalCalories) * 100 : 0;
+
+            // Calculate overall status based on all macro achievements
+            const macroAchievements = [
+                { name: 'calories', value: calorieAchievement, hasTarget: day.goalCalories > 0 },
+                { name: 'protein', value: proteinAchievement, hasTarget: day.proteinTarget > 0 },
+                { name: 'fat', value: fatAchievement, hasTarget: fatTarget > 0 },
+                { name: 'carbs', value: carbAchievement, hasTarget: carbTarget > 0 }
+            ];
+
+            // Only consider macros that have targets set
+            const macrosWithTargets = macroAchievements.filter(macro => macro.hasTarget);
+
+            let overallStatus = 'needs-improvement';
+            if (macrosWithTargets.length > 0) {
+                const excellentCount = macrosWithTargets.filter(macro =>
+                    macro.value >= 95 && macro.value <= 105
+                ).length;
+
+                const goodCount = macrosWithTargets.filter(macro =>
+                    macro.value >= 90 && macro.value <= 110
+                ).length;
+
+                const redCount = macrosWithTargets.filter(macro =>
+                    macro.value < 90 || macro.value > 110
+                ).length;
+
+                // Determine overall status
+                if (excellentCount === macrosWithTargets.length) {
+                    overallStatus = 'excellent'; // All macros are excellent
+                } else if (redCount === 0 && goodCount >= macrosWithTargets.length * 0.7) {
+                    overallStatus = 'good'; // No red macros and at least 70% are good/excellent
+                } else {
+                    overallStatus = 'needs-improvement'; // Has red macros or too many yellows
+                }
+            }
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><strong>${day.day}</strong></td>
-                <td>${Math.round(day.calories)} / ${Math.round(day.goalCalories)}${day.dailyAdjustment !== 0 ? ` (${day.dailyAdjustment > 0 ? '+' : ''}${day.dailyAdjustment})` : ''}</td>
-                <td>${(day.protein + day.proteinG).toFixed(1)} / ${Math.round(day.proteinTarget)}</td>
-                <td>${day.fat.toFixed(1)}</td>
-                <td>${day.carbs.toFixed(1)}</td>
-                <td><span class="status-badge status-${day.status}">${statusText[day.status]}</span></td>
+                <td>
+                    ${day.calories > 0 ? 
+                        `<span class="status-badge ${getStatusClass(calorieAchievement)}">${Math.round(day.calories)} / ${Math.round(day.goalCalories)} (${calorieAchievement.toFixed(0)}%)${day.dailyAdjustment !== 0 ? ` (${day.dailyAdjustment > 0 ? '+' : ''}${day.dailyAdjustment})` : ''}</span>` :
+                        `${Math.round(day.calories)} / ${Math.round(day.goalCalories)}${day.dailyAdjustment !== 0 ? ` (${day.dailyAdjustment > 0 ? '+' : ''}${day.dailyAdjustment})` : ''}`
+                    }
+                </td>
+                <td>
+                    ${totalProtein > 0 && day.proteinTarget > 0 ? 
+                        `<span class="status-badge ${getStatusClass(proteinAchievement)}">${totalProtein.toFixed(1)} / ${Math.round(day.proteinTarget)} (${proteinAchievement.toFixed(0)}%)</span>` :
+                        `${totalProtein.toFixed(1)} / ${Math.round(day.proteinTarget)}`
+                    }
+                </td>
+                <td>
+                    ${fatTarget > 0 && day.fat > 0 ?
+                        `<span class="status-badge ${getStatusClass(fatAchievement)}">${day.fat.toFixed(1)} / ${fatTarget.toFixed(1)} (${fatAchievement.toFixed(0)}%)</span>` :
+                        fatTarget > 0 ? `${day.fat.toFixed(1)} / ${fatTarget.toFixed(1)}` : `${day.fat.toFixed(1)}`
+                    }
+                </td>
+                <td>
+                    ${carbTarget > 0 && day.carbs > 0 ?
+                        `<span class="status-badge ${getStatusClass(carbAchievement)}">${day.carbs.toFixed(1)} / ${carbTarget.toFixed(1)} (${carbAchievement.toFixed(0)}%)</span>` :
+                        carbTarget > 0 ? `${day.carbs.toFixed(1)} / ${carbTarget.toFixed(1)}` : `${day.carbs.toFixed(1)}`
+                    }
+                </td>
+                <td><span class="status-badge status-${overallStatus}">${statusText[overallStatus]}</span></td>
             `;
             tbody.appendChild(row);
         });

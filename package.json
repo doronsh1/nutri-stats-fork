@@ -4,12 +4,13 @@
   "description": "Food diary application with BMR calculator",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node scripts/generate-version.js && node server.js",
+    "dev": "node scripts/generate-version.js && nodemon server.js",
     "migrate": "node scripts/migrate.js",
     "migrate:init": "node scripts/migrate.js init",
     "migrate:foods": "node scripts/migrate.js foods",
-    "migrate:users": "node scripts/migrate.js users"
+    "migrate:users": "node scripts/migrate.js users",
+    "version": "node scripts/generate-version.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
