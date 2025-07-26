@@ -473,7 +473,16 @@ class WeightTracker {
     calculateAvgWeightChange() {
         if (this.weightData.length < 2) return 0;
 
-        const totalDays = this.weightData.length - 1;
+        // Calculate actual days between first and last entry
+        const firstEntry = this.weightData[this.weightData.length - 1]; // Oldest entry
+        const lastEntry = this.weightData[0]; // Most recent entry
+        
+        const firstDate = new Date(firstEntry.date);
+        const lastDate = new Date(lastEntry.date);
+        const totalDays = Math.abs((lastDate - firstDate) / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+        
+        if (totalDays === 0) return 0; // Same day entries
+        
         const totalChange = this.calculateTotalWeightChange();
 
         // Calculate average change per week (7 days)

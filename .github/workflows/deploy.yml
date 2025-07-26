@@ -29,5 +29,4 @@ jobs:
           cd Stats
           npm install
           # pm2 start npm --name stats-app -- start || pm2 restart stats-app
-          # pm2 start npm --name stats-app -- start || pm2 restart stats-app
         EOF

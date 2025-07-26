@@ -20,8 +20,7 @@ class NavigationBar {
             // Load authentication state and user display
             this.loadAuthenticatedUser();
 
-            // Load version information
-            this.loadVersionInfo();
+
         } catch (error) {
             console.error('Error loading navbar:', error);
         }
@@ -87,43 +86,7 @@ class NavigationBar {
         }
     }
 
-    async loadVersionInfo() {
-        try {
-            const response = await fetch('/api/version');
-            const versionData = await response.json();
 
-            const versionText = document.getElementById('versionText');
-            const versionInfo = document.getElementById('versionInfo');
-
-            if (versionText) {
-                versionText.textContent = versionData.fullVersion;
-            }
-
-            if (versionInfo) {
-                // Add click handler to show detailed version info
-                versionInfo.addEventListener('click', () => {
-                    const details = [
-                        `Version: ${versionData.version}`,
-                        `Git Hash: ${versionData.gitHash}`,
-                        `Branch: ${versionData.gitBranch}`,
-                        `Commit Date: ${new Date(versionData.commitDate).toLocaleString()}`,
-                        `Build Date: ${new Date(versionData.buildDate).toLocaleString()}`
-                    ].join('\n');
-
-                    alert(`Food Diary Version Info\n\n${details}`);
-                });
-
-                // Update tooltip with build date
-                versionInfo.title = `Built: ${new Date(versionData.buildDate).toLocaleString()}`;
-            }
-        } catch (error) {
-            console.error('Error loading version info:', error);
-            const versionText = document.getElementById('versionText');
-            if (versionText) {
-                versionText.textContent = 'v1.0.0-dev';
-            }
-        }
-    }
 
     redirectToLogin() {
         // Small delay to prevent immediate redirect flashing

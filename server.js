@@ -71,28 +71,24 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'API is working' });
 });
 
-// Version endpoint
+// Version endpoint - simplified to just use package.json
 app.get('/api/version', (req, res) => {
     try {
-        const versionPath = path.join(__dirname, 'src/data/version.json');
-        if (fs.existsSync(versionPath)) {
-            const versionInfo = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
-            res.json(versionInfo);
-        } else {
-            // Fallback if version file doesn't exist
-            const packageJson = require('./package.json');
-            res.json({
-                version: packageJson.version,
-                gitHash: 'unknown',
-                gitBranch: 'unknown',
-                commitDate: 'unknown',
-                buildDate: new Date().toISOString(),
-                fullVersion: `v${packageJson.version}-dev`
-            });
-        }
+        const packageJson = require('./package.json');
+        const buildDate = new Date().toISOString();
+        
+        res.json({
+            version: packageJson.version,
+            buildDate: buildDate,
+            fullVersion: `v${packageJson.version}`
+        });
     } catch (error) {
         console.error('Error reading version info:', error);
-        res.status(500).json({ error: 'Could not read version info' });
+        res.status(500).json({ 
+            version: '1.0.0',
+            buildDate: new Date().toISOString(),
+            fullVersion: 'v1.0.0'
+        });
     }
 });
 
@@ -122,21 +118,14 @@ async function startServer() {
         // Initialize database (non-blocking - server starts even if DB fails)
         initializeDatabaseAsync();
 
-        // Load and display version info
-        let versionInfo = { fullVersion: 'v1.0.0-dev' };
-        try {
-            const versionPath = path.join(__dirname, 'src/data/version.json');
-            if (fs.existsSync(versionPath)) {
-                versionInfo = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
-            }
-        } catch (error) {
-            console.warn('Could not load version info');
-        }
+        // Get version from package.json
+        const packageJson = require('./package.json');
+        const version = `v${packageJson.version}`;
 
         // Start the server - bind to all interfaces for cloud deployment
         app.listen(port, '0.0.0.0', () => {
             console.log('=================================');
-            console.log(`🚀 Food Diary Server ${versionInfo.fullVersion}`);
+            console.log(`🚀 NutriStats Server ${version}`);
             console.log(`Server is running on port ${port}`);
             console.log('Available routes:');
             console.log('- GET  /api/test         (Test endpoint)');

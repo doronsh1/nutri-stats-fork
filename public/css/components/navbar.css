@@ -89,20 +89,4 @@
     border-bottom: 2px solid var(--primary-blue, #1a73e8) !important;
 }
 
-/* Version info styling */
-.version-info {
-    font-size: 0.8rem !important;
-    color: #6c757d !important;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    padding: 8px 12px !important;
-}
-
-.version-info:hover {
-    color: #495057 !important;
-    border-bottom: none !important;
-}
-
-.version-info i {
-    font-size: 0.9rem;
-} 
+ 
