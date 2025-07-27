@@ -83,10 +83,9 @@ typings/
 .tern-port
 
 # OS generated files
-#.db
+# Note: .db files are intentionally tracked (for SQLite database)
 .DS_Store
 .DS_Store?
-._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
