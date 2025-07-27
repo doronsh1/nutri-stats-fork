@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/common.css">
     <style>
         body {
-            background-image: url('/images/login-bg-smart.jpg');
+            background-image: url('/images/login-bg-smart-mobile.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -214,7 +214,8 @@
                     <div class="form-group">
                         <label for="register-password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="register-password" autocomplete="new-password"
-                            required>
+                            minlength="8" required>
+                        <small class="form-text text-muted">At least 8 characters with uppercase, lowercase, number.</small>
                     </div>
                     <div class="form-group">
                         <label for="register-confirm-password" class="form-label">Confirm Password</label>
@@ -233,11 +234,8 @@
 
     <script>
         let isLoginForm = true;
-        let currentBackground = 'smart'; // Track which background image is currently active
+        let currentBackground = 'smart-mobile'; // Track which background image is currently active
         const backgrounds = {
-            'composite': '/images/login-bg-composite.jpg',
-            'mobile': '/images/login-bg-mobile.jpg',
-            'smart': '/images/login-bg-smart.jpg',
             'smart-mobile': '/images/login-bg-smart-mobile.jpg',
             'original1': '/images/1F.png',
             'original2': '/images/2F.png'
@@ -251,11 +249,8 @@
 
         // Set mobile background for smaller screens
         function setResponsiveBackground() {
-            if (window.innerWidth <= 768) {
-                switchBackground('smart-mobile');
-            } else {
-                switchBackground('smart');
-            }
+            // Use smart-mobile for all screen sizes since it's the only one available
+            switchBackground('smart-mobile');
         }
 
         // Set initial background based on screen size
@@ -264,20 +259,13 @@
         // Update background on window resize
         window.addEventListener('resize', setResponsiveBackground);
 
-        // Optional: Add a subtle background switch every 30 seconds for variety
-        // Uncomment the line below if you want automatic background switching
-        // setInterval(() => switchBackground('composite'), 30000);
-
         // Function to test different brightness levels (for development)
         function testBrightness() {
             console.log('🎨 Available backgrounds:');
-            console.log('- smart: Smart white background (preserves fruits) - CURRENT');
-            console.log('- smart-mobile: Mobile-optimized smart version');
-            console.log('- composite: Bright composite image');
-            console.log('- mobile: Mobile-optimized bright image');
+            console.log('- smart-mobile: Mobile-optimized smart version - CURRENT');
             console.log('- original1: Original 1F.png');
             console.log('- original2: Original 2F.png');
-            console.log('💡 Use: switchBackground("composite") to switch back to composite');
+            console.log('💡 Use: switchBackground("original1") to switch to original backgrounds');
         }
 
         // Form switching
@@ -378,6 +366,13 @@
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const confirmPassword = document.getElementById('register-confirm-password').value;
+
+            // Validate password strength
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&#^()\[\]{}+\-=_|:;"',./<>~`]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                showAlert('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+                return;
+            }
 
             // Validate passwords match
             if (password !== confirmPassword) {

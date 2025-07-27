@@ -21,6 +21,11 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Email, password, and name are required' });
         }
 
+        // Validate password length (minimum 6 characters, no character restrictions)
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+        }
+
         // Check if user already exists using SQLite
         const existingUser = await userService.getUserByEmail(email);
         if (existingUser) {
