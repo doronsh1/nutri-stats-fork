@@ -9,19 +9,20 @@ router.use((req, res, next) => {
     next();
 });
 
-// Get all foods - requires authentication, shared database
+// Get all foods - requires authentication, user-specific database
 router.get('/', authenticateToken, async (req, res) => {
     console.log('Handling GET request for /api/foods');
     try {
         const { search } = req.query;
+        const userId = req.user.id;
         
         let foods;
         if (search) {
-            // Use search functionality
-            foods = await foodService.searchFoods(search);
+            // Use search functionality with user context
+            foods = await foodService.searchFoods(search, userId);
         } else {
-            // Get all foods
-            foods = await foodService.getAllFoods();
+            // Get all foods for this user
+            foods = await foodService.getAllFoods(userId);
         }
         
         // Maintain the same response format as before
@@ -37,7 +38,8 @@ router.get('/search', authenticateToken, async (req, res) => {
     console.log('Handling GET request for /api/foods/search');
     try {
         const { q } = req.query;
-        const foods = await foodService.searchFoods(q || '');
+        const userId = req.user.id;
+        const foods = await foodService.searchFoods(q || '', userId);
         
         res.json({ foods: foods });
     } catch (error) {
@@ -46,11 +48,12 @@ router.get('/search', authenticateToken, async (req, res) => {
     }
 });
 
-// Add new food - requires authentication, shared database
+// Add new food - requires authentication, user-specific database
 router.post('/', authenticateToken, async (req, res) => {
     console.log('Handling POST request for /api/foods');
     try {
-        const success = await foodService.addFood(req.body);
+        const userId = req.user.id;
+        const success = await foodService.addFood(req.body, userId);
         if (success) {
             res.status(201).json(req.body);
         } else {
@@ -62,22 +65,21 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-// Update food - requires authentication, shared database
+// Update food - requires authentication, user-specific database
 router.put('/:index', authenticateToken, async (req, res) => {
     console.log('Handling PUT request for /api/foods/:index');
     try {
         const index = parseInt(req.params.index);
+        const userId = req.user.id;
         
-        // For SQLite mode, we need to get the food ID first
-        // Since frontend sends index, we need to map it to database ID
-        const allFoods = await foodService.getAllFoods();
+        // Get user's foods to validate index
+        const allFoods = await foodService.getAllFoods(userId);
         if (index < 0 || index >= allFoods.length) {
             return res.status(404).json({ error: 'Food not found' });
         }
 
-        // For now, we'll use the index approach for compatibility
-        // In SQLite mode, this will work through the updateFood method
-        const success = await foodService.updateFood(index, req.body);
+        // Update food with user context (Copy-on-Write)
+        const success = await foodService.updateFood(index, req.body, userId);
         if (success) {
             res.json(req.body);
         } else {
@@ -89,21 +91,21 @@ router.put('/:index', authenticateToken, async (req, res) => {
     }
 });
 
-// Delete food - requires authentication, shared database
+// Delete food - requires authentication, user-specific database
 router.delete('/:index', authenticateToken, async (req, res) => {
     console.log('Handling DELETE request for /api/foods/:index');
     try {
         const index = parseInt(req.params.index);
+        const userId = req.user.id;
         
-        // Get all foods to validate index and find the item to delete
-        const allFoods = await foodService.getAllFoods();
+        // Get user's foods to validate index
+        const allFoods = await foodService.getAllFoods(userId);
         if (index < 0 || index >= allFoods.length) {
             return res.status(404).json({ error: 'Food not found' });
         }
 
-        // For now, we'll use the index approach for compatibility
-        // In SQLite mode, this will work through the deleteFood method
-        const success = await foodService.deleteFood(index);
+        // Delete food with user context (soft delete for global, hard delete for custom)
+        const success = await foodService.deleteFood(index, userId);
         if (success) {
             res.status(204).send();
         } else {

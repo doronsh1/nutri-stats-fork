@@ -1,0 +1,19 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield shape -->
+  <path d="M32 8 L20 16 L20 32 C20 44 32 56 32 56 C32 56 44 44 44 32 L44 16 Z" 
+        fill="#28a745" opacity="0.9"/>
+  
+  <!-- Inner content area -->
+  <path d="M32 12 L24 18 L24 30 C24 40 32 48 32 48 C32 48 40 40 40 30 L40 18 Z" 
+        fill="#ffffff"/>
+  
+  <!-- Apple icon -->
+  <path d="M32 20c-3 0-5 2-5 5 0 4 2 6 5 9 3-3 5-5 5-9 0-3-2-5-5-5z" fill="#28a745"/>
+  <path d="M32 20c1-1 2-1 2 0" stroke="#28a745" stroke-width="1" fill="none"/>
+  
+  <!-- Macro rings -->
+  <circle cx="28" cy="38" r="3" fill="none" stroke="#1a73e8" stroke-width="2" 
+          stroke-dasharray="9 19" transform="rotate(-90 28 38)"/>
+  <circle cx="36" cy="38" r="3" fill="none" stroke="#ffc107" stroke-width="2" 
+          stroke-dasharray="12 19" transform="rotate(-90 36 38)"/>
+</svg>

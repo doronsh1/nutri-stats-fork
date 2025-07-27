@@ -1,6 +1,6 @@
 {
   "name": "nutristats",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "NutriStats - Comprehensive nutrition tracking and analytics application",
   "main": "server.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "migrate": "node scripts/migrate.js",
     "migrate:init": "node scripts/migrate.js init",
     "migrate:foods": "node scripts/migrate.js foods",
-    "migrate:users": "node scripts/migrate.js users"
+    "migrate:users": "node scripts/migrate.js users",
+    "migrate:user-foods": "node scripts/migrate-user-foods.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

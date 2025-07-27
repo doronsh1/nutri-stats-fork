@@ -1,6 +1,26 @@
 const { query, isDatabaseAvailable, dbPath } = require('./connection');
 require('dotenv').config();
 
+// Migration function for user_foods table
+async function migrateUserFoodsTable() {
+    try {
+        // Check if is_deleted column exists in user_foods table
+        const tableInfo = await query(`PRAGMA table_info(user_foods)`);
+        const hasIsDeleted = tableInfo.rows.some(col => col.name === 'is_deleted');
+        
+        if (!hasIsDeleted) {
+            await query(`ALTER TABLE user_foods ADD COLUMN is_deleted BOOLEAN DEFAULT 0`);
+            console.log('✅ Added is_deleted column to user_foods table');
+            return 'Added is_deleted column to user_foods';
+        }
+        return null;
+    } catch (error) {
+        // Table might not exist yet, which is fine - it will be created with the column
+        console.log('ℹ️  User foods table migration skipped (table will be created fresh)');
+        return null;
+    }
+}
+
 // Test database connection
 async function testConnection() {
     try {
@@ -27,7 +47,7 @@ async function initializeDatabase() {
             return false;
         }
 
-        // Create foods table (shared across all users)
+        // Create foods table (global reference foods - read-only for users)
         await query(`
             CREATE TABLE IF NOT EXISTS foods (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,6 +59,26 @@ async function initializeDatabase() {
                 protein_general REAL,
                 fat REAL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create user_foods table (user-specific foods)
+        await query(`
+            CREATE TABLE IF NOT EXISTS user_foods (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                item TEXT NOT NULL,
+                amount TEXT,
+                calories REAL,
+                carbs REAL,
+                protein REAL,
+                protein_general REAL,
+                fat REAL,
+                is_custom BOOLEAN DEFAULT 1,
+                is_deleted BOOLEAN DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
 
@@ -253,6 +293,12 @@ async function initializeDatabase() {
             }
         }
 
+        // Run user foods migration
+        const userFoodsMigration = await migrateUserFoodsTable();
+        if (userFoodsMigration) {
+            migrationsPerformed.push(userFoodsMigration);
+        }
+        
         console.log('✅ SQLite database schema initialized successfully');
         
         // Only show migration summary if migrations were actually performed

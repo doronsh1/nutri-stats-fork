@@ -17,23 +17,52 @@ class FoodService {
         }
     }
 
-    // Get all foods
-    async getAllFoods() {
+    // Get all foods for a specific user (combines global + user-specific foods)
+    async getAllFoods(userId = null) {
         if (!isDatabaseAvailable()) {
             console.error('❌ Database not available');
             return [];
         }
 
         try {
-            const result = await query('SELECT * FROM foods ORDER BY item');
-            return result.rows.map(row => ({
+            let foods = [];
+
+            if (userId) {
+                // Get user-specific foods first
+                const userFoods = await query(`
+                    SELECT *, 'user' as source FROM user_foods 
+                    WHERE user_id = ? 
+                    ORDER BY item
+                `, [userId]);
+
+                // Get global foods that user hasn't customized
+                const globalFoods = await query(`
+                    SELECT *, 'global' as source FROM foods 
+                    WHERE item NOT IN (
+                        SELECT item FROM user_foods WHERE user_id = ?
+                    )
+                    ORDER BY item
+                `, [userId]);
+
+                // Combine user foods and global foods
+                foods = [...userFoods.rows, ...globalFoods.rows];
+            } else {
+                // Fallback: return only global foods if no userId provided
+                const result = await query('SELECT *, "global" as source FROM foods ORDER BY item');
+                foods = result.rows;
+            }
+
+            return foods.map(row => ({
+                id: row.id,
                 item: row.item,
                 amount: row.amount,
                 calories: row.calories,
                 carbs: row.carbs,
                 protein: row.protein,
                 proteinGeneral: row.protein_general,
-                fat: row.fat
+                fat: row.fat,
+                source: row.source,
+                isCustom: row.source === 'user'
             }));
         } catch (error) {
             console.error('❌ Database error:', error.message);
@@ -41,29 +70,60 @@ class FoodService {
         }
     }
 
-    // Search foods
-    async searchFoods(searchTerm) {
+    // Search foods for a specific user (user foods take priority)
+    async searchFoods(searchTerm, userId = null) {
         if (!isDatabaseAvailable()) {
             console.error('❌ Database not available');
             return [];
         }
 
         try {
-            const result = await query(`
-                SELECT * FROM foods 
-                WHERE item LIKE ? 
-                ORDER BY item
-                LIMIT 50
-            `, [`%${searchTerm}%`]);
+            let foods = [];
 
-            return result.rows.map(row => ({
+            if (userId) {
+                // Search user-specific foods first (including custom and modified foods)
+                const userFoods = await query(`
+                    SELECT *, 'user' as source FROM user_foods 
+                    WHERE user_id = ? AND item LIKE ? AND (is_deleted IS NULL OR is_deleted = 0)
+                    ORDER BY item
+                    LIMIT 25
+                `, [userId, `%${searchTerm}%`]);
+
+                // Search global foods that user hasn't customized or deleted
+                const globalFoods = await query(`
+                    SELECT *, 'global' as source FROM foods 
+                    WHERE item LIKE ? AND item NOT IN (
+                        SELECT item FROM user_foods 
+                        WHERE user_id = ? AND (is_deleted IS NULL OR is_deleted = 0)
+                    )
+                    ORDER BY item
+                    LIMIT 25
+                `, [`%${searchTerm}%`, userId]);
+
+                // Combine user foods (priority) and global foods
+                foods = [...userFoods.rows, ...globalFoods.rows];
+            } else {
+                // Fallback: search only global foods if no userId
+                const result = await query(`
+                    SELECT *, 'global' as source FROM foods 
+                    WHERE item LIKE ? 
+                    ORDER BY item
+                    LIMIT 50
+                `, [`%${searchTerm}%`]);
+                foods = result.rows;
+            }
+
+            return foods.map(row => ({
+                id: row.id,
                 item: row.item,
                 amount: row.amount,
                 calories: row.calories,
                 carbs: row.carbs,
                 protein: row.protein,
                 proteinGeneral: row.protein_general,
-                fat: row.fat
+                fat: row.fat,
+                source: row.source,
+                isCustom: row.source === 'user'
             }));
         } catch (error) {
             console.error('❌ Database search error:', error.message);
@@ -71,18 +131,24 @@ class FoodService {
         }
     }
 
-    // Add new food
-    async addFood(foodData) {
+    // Add new food (always goes to user's personal foods)
+    async addFood(foodData, userId) {
         if (!isDatabaseAvailable()) {
             console.error('❌ Database not available');
             return false;
         }
 
+        if (!userId) {
+            console.error('❌ User ID required for adding food');
+            return false;
+        }
+
         try {
             await query(`
-                INSERT INTO foods (item, amount, calories, carbs, protein, protein_general, fat)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO user_foods (user_id, item, amount, calories, carbs, protein, protein_general, fat, is_custom)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
             `, [
+                userId,
                 foodData.item,
                 foodData.amount,
                 foodData.calories,
@@ -91,7 +157,7 @@ class FoodService {
                 foodData.proteinGeneral,
                 foodData.fat
             ]);
-            console.log('✅ Food added to database:', foodData.item);
+            console.log('✅ Food added to user database:', foodData.item, 'for user:', userId);
             return true;
         } catch (error) {
             console.error('❌ Database insert error:', error.message);
@@ -99,44 +165,64 @@ class FoodService {
         }
     }
 
-    // Update food by index (for frontend compatibility)
-    async updateFood(index, foodData) {
+    // Update food by index (Copy-on-Write approach)
+    async updateFood(index, foodData, userId) {
         if (!isDatabaseAvailable()) {
             console.error('❌ Database not available');
             return false;
         }
 
+        if (!userId) {
+            console.error('❌ User ID required for updating food');
+            return false;
+        }
+
         try {
-            // Get all foods to find the actual database ID
-            const allFoods = await this.getAllFoods();
+            // Get all foods for this user to find the target food
+            const allFoods = await this.getAllFoods(userId);
             if (index < 0 || index >= allFoods.length) {
                 console.error('Invalid index for update:', index);
                 return false;
             }
 
-            // Get the food item at the specified index
             const targetFood = allFoods[index];
 
-            // Update by matching the item name (since we don't have ID in the response)
-            // This is a workaround for the current frontend implementation
-            const result = await query(`
-                UPDATE foods 
-                SET item = ?, amount = ?, calories = ?, carbs = ?, protein = ?, protein_general = ?, fat = ?
-                WHERE item = ? AND amount = ? AND calories = ?
-            `, [
-                foodData.item,
-                foodData.amount,
-                foodData.calories,
-                foodData.carbs,
-                foodData.protein,
-                foodData.proteinGeneral,
-                foodData.fat,
-                targetFood.item,
-                targetFood.amount,
-                targetFood.calories
-            ]);
+            if (targetFood.source === 'user') {
+                // Update existing user food
+                await query(`
+                    UPDATE user_foods 
+                    SET item = ?, amount = ?, calories = ?, carbs = ?, protein = ?, protein_general = ?, fat = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ? AND user_id = ?
+                `, [
+                    foodData.item,
+                    foodData.amount,
+                    foodData.calories,
+                    foodData.carbs,
+                    foodData.protein,
+                    foodData.proteinGeneral,
+                    foodData.fat,
+                    targetFood.id,
+                    userId
+                ]);
+                console.log('✅ User food updated:', foodData.item);
+            } else {
+                // Copy-on-Write: Create user-specific version of global food
+                await query(`
+                    INSERT INTO user_foods (user_id, item, amount, calories, carbs, protein, protein_general, fat, is_custom)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+                `, [
+                    userId,
+                    foodData.item,
+                    foodData.amount,
+                    foodData.calories,
+                    foodData.carbs,
+                    foodData.protein,
+                    foodData.proteinGeneral,
+                    foodData.fat
+                ]);
+                console.log('✅ Global food copied and modified for user:', foodData.item, 'User:', userId);
+            }
 
-            console.log('✅ Food updated in database:', foodData.item);
             return true;
         } catch (error) {
             console.error('❌ Database update error:', error.message);
@@ -144,35 +230,53 @@ class FoodService {
         }
     }
 
-    // Delete food by index (for frontend compatibility)
-    async deleteFood(index) {
+    // Delete food by index (soft delete for global foods, hard delete for user foods)
+    async deleteFood(index, userId) {
         if (!isDatabaseAvailable()) {
             console.error('❌ Database not available');
             return false;
         }
 
+        if (!userId) {
+            console.error('❌ User ID required for deleting food');
+            return false;
+        }
+
         try {
-            // Get all foods to find the actual item to delete
-            const allFoods = await this.getAllFoods();
+            // Get all foods for this user to find the target food
+            const allFoods = await this.getAllFoods(userId);
             if (index < 0 || index >= allFoods.length) {
                 console.error('Invalid index for delete:', index);
                 return false;
             }
 
-            // Get the food item at the specified index
             const targetFood = allFoods[index];
 
-            // Delete by matching the item details
-            const result = await query(`
-                DELETE FROM foods 
-                WHERE item = ? AND amount = ? AND calories = ?
-            `, [
-                targetFood.item,
-                targetFood.amount,
-                targetFood.calories
-            ]);
+            if (targetFood.source === 'user') {
+                // Hard delete: Remove user's custom food completely
+                await query(`
+                    DELETE FROM user_foods 
+                    WHERE id = ? AND user_id = ?
+                `, [targetFood.id, userId]);
+                console.log('✅ User custom food deleted:', targetFood.item);
+            } else {
+                // Soft delete: Mark global food as deleted for this user
+                await query(`
+                    INSERT INTO user_foods (user_id, item, amount, calories, carbs, protein, protein_general, fat, is_custom, is_deleted)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1)
+                `, [
+                    userId,
+                    targetFood.item,
+                    targetFood.amount,
+                    targetFood.calories,
+                    targetFood.carbs,
+                    targetFood.protein,
+                    targetFood.proteinGeneral,
+                    targetFood.fat
+                ]);
+                console.log('✅ Global food hidden for user:', targetFood.item, 'User:', userId);
+            }
 
-            console.log('✅ Food deleted from database:', targetFood.item);
             return true;
         } catch (error) {
             console.error('❌ Database delete error:', error.message);

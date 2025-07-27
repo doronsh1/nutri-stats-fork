@@ -20,7 +20,6 @@ class NavigationBar {
             // Load authentication state and user display
             this.loadAuthenticatedUser();
 
-
         } catch (error) {
             console.error('Error loading navbar:', error);
         }
@@ -85,6 +84,8 @@ class NavigationBar {
             });
         }
     }
+
+
 
 
 
