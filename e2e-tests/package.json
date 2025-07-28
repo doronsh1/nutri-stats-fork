@@ -1,0 +1,25 @@
+{
+  "name": "nutristats-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for NutriStats application using Playwright",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:safe": "npm run test && npm run db:cleanup",
+    "test:report": "playwright show-report",
+    "test:smoke": "node run-smoke-tests.js",
+    "install:browsers": "playwright install",
+    "db:cleanup": "node scripts/cleanup-test-data.js",
+    "verify": "node scripts/verify-setup.js"
+  },
+  "keywords": ["playwright", "e2e", "testing", "nutristats"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "sqlite3": "^5.1.6"
+  }
+}

@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Test results
+test-results/
+playwright-report/
+reports/
+
+# Screenshots and videos
+screenshots/
+videos/
+
+# Database files (keep original, ignore test changes)
+data/nutrition_app.db
+data/test-nutrition_app.db
+data/backups/
+
+# Environment files
+.env.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
