@@ -630,7 +630,7 @@ class DiaryPage extends BasePage {
     // Verify each meal has a table
     for (let mealId = 1; mealId <= 6; mealId++) {
       const mealTable = this.getMealTable(mealId);
-      await expect(mealTable).toBeVisible();
+      await this.assertElementVisible(mealTable);
     }
   }
 }
