@@ -243,7 +243,9 @@
     - Add tests for navigation state management
     - _Requirements: 4.2, 4.3_
 
-- [ ] 8. Write food database management test suite
+- [x] 8. Write food database management test suite
+
+
   - [x] 8.1 Create food CRUD operation tests
 
 
@@ -285,16 +287,31 @@
     - Add tests for chart export functionality
     - _Requirements: 4.2, 4.3_
 
-- [ ] 10. Write settings management test suite
-  - [ ] 10.1 Create user settings tests
+- [x] 10. Write settings management test suite
+
+
+
+
+  - [x] 10.1 Create user settings tests
+
+
+
+
+
     - Write tests for settings form interactions
     - Implement tests for settings persistence
     - Create tests for settings validation
     - Add tests for default settings behavior
     - _Requirements: 4.2, 4.3, 3.1_
 
-- [ ] 11. Write weight tracking test suite
-  - [ ] 11.1 Create weight entry tests
+- [x] 11. Write weight tracking test suite
+
+
+
+
+  - [x] 11.1 Create weight entry tests
+
+
     - Write tests for weight entry creation and editing
     - Implement tests for weight data validation
     - Create tests for weight history management

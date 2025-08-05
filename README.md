@@ -1,63 +1,68 @@
-# Stats - Personal Nutrition Tracker
+# NutriStats - Pro Athlete Nutrition Planning & Analytics Platform
 
-A comprehensive web-based nutrition tracking application that helps you monitor daily food intake, track weight changes, analyze nutritional data, and manage meal planning with SQLite database backend.
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-3.0+-blue.svg)](https://www.sqlite.org/)
+[![JWT](https://img.shields.io/badge/JWT-Authentication-orange.svg)](https://jwt.io/)
+[![Express](https://img.shields.io/badge/Express.js-4.18+-lightgrey.svg)](https://expressjs.com/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.0+-purple.svg)](https://getbootstrap.com/)
 
-## Features
+A comprehensive web-based nutrition tracking and analytics platform specifically designed for professional athletes and sports nutrition professionals. This application provides advanced meal planning, macro tracking, weight management, and performance analytics to optimize athletic nutrition strategies.
 
-### 🍽️ Daily Meal Tracking
-- Track up to 6 meals per day across 7 days of the week
-- Real-time nutritional calculations (calories, carbs, protein, fat)
-- Interactive food search with autocomplete
-- Automatic meal totals calculation
-- Time-based meal scheduling
-- Persistent data storage with SQLite database
+> **Related Project:** [NutriStats-FrontEnd Automation](https://github.com/yourusername/NutriStats-FrontEnd-Automation) - Comprehensive E2E testing suite for this application.
 
-### 📊 Nutrition Analytics & Reports
-- Comprehensive reports with visual charts and statistics
-- Macro breakdown with customizable protein and fat levels
-- Calorie adjustment system
-- Visual stat cards with color-coded sections
-- Real-time percentage calculations
-- Goal tracking and progress monitoring
-- Weekly and monthly nutrition trends
+## 🎯 Overview
 
-### ⚖️ Weight Tracking
-- Log daily weight measurements
-- **Today's Weight** - Current weight display
-- **Last Change** - Recent weight change tracking
-- **Overall Change** - Total progress since start
-- **Average Change** - Typical rate of change
-- Visual weight progression charts
-- Weight history management
+NutriStats is engineered to meet the demanding nutritional requirements of professional athletes, providing precise macro tracking, performance-oriented meal planning, and comprehensive analytics. Built with vanilla JavaScript and modern web technologies, it offers a robust, scalable solution for sports nutrition management.
 
-### 🥗 Food Database Management
-- Comprehensive food database with nutritional information
-- Add, edit, and delete food items
-- Search and filter functionality
-- Inline editing capabilities
-- Persistent SQLite storage
+## ✨ Core Features
 
-### ⚙️ Settings & Customization
-- Unit system selection (metric/imperial)
-- Personalized macro targets
-- Adjustable calorie goals
-- User authentication system
-- Persistent settings storage
+### 🏃‍♂️ Professional Athlete Nutrition Planning
+- **Precision Macro Tracking** - Track up to 6 meals per day with exact macro calculations
+- **Performance-Based Meal Timing** - Schedule meals around training and competition
+- **Advanced Calorie Cycling** - Support for periodized nutrition plans
+- **Real-time Nutritional Analysis** - Instant calculations for calories, carbs, protein, fat
+- **Custom Macro Ratios** - Tailored to sport-specific requirements
+- **Weekly Nutrition Periodization** - Plan nutrition cycles for training phases
 
-### 🔐 Security & Authentication
-- JWT-based stateless authentication
-- Bcrypt password hashing with salt rounds
-- Rate limiting for login attempts
-- Input validation and sanitization
-- Protected API endpoints
-- Secure token management
+### 📊 Advanced Analytics & Reporting
+- **Performance Nutrition Reports** - Comprehensive analytics with visual charts
+- **Macro Distribution Analysis** - Detailed breakdown with customizable targets
+- **Training Phase Tracking** - Nutrition alignment with training cycles
+- **Progress Monitoring** - Goal tracking and performance correlation
+- **Trend Analysis** - Weekly and monthly nutrition patterns
+- **Export Capabilities** - Data export for sports science teams
 
-### 📚 Documentation Site
-- Comprehensive user documentation
-- Getting started guides
-- Feature explanations
-- How-to tutorials
-- Responsive design with sidebar navigation
+### ⚖️ Precision Weight Management
+- **Daily Weight Tracking** - Monitor weight fluctuations and trends
+- **Body Composition Analysis** - Track changes over training cycles
+- **Performance Weight Correlation** - Link weight changes to performance metrics
+- **Competition Weight Planning** - Manage weight cuts and gains strategically
+- **Visual Progress Charts** - Comprehensive weight progression analytics
+- **Historical Data Management** - Long-term weight trend analysis
+
+### 🥗 Professional Food Database
+- **Sports Nutrition Database** - Comprehensive food database with precise nutritional data
+- **Custom Food Creation** - Add sport-specific supplements and foods
+- **Batch Food Management** - Efficient database management tools
+- **Nutritional Search & Filter** - Advanced search capabilities
+- **Inline Editing** - Quick modifications for accuracy
+- **Import/Export Functions** - Share databases between professionals
+
+### ⚙️ Advanced Configuration
+- **Multi-Unit Support** - Metric/Imperial system flexibility
+- **Personalized Targets** - Individual macro and calorie goals
+- **Training Phase Settings** - Adjust nutrition for different training phases
+- **User Role Management** - Support for athletes and nutrition professionals
+- **Data Persistence** - Reliable SQLite database storage
+
+### 🔐 Enterprise-Grade Security
+- **JWT Authentication** - Stateless, secure token-based authentication
+- **Password Security** - Bcrypt hashing with configurable salt rounds
+- **Rate Limiting** - Protection against brute force attacks
+- **Input Validation** - Comprehensive data sanitization
+- **API Security** - Protected endpoints with proper authorization
+- **Session Management** - Secure token lifecycle management
 
 ## Installation
 
@@ -85,6 +90,26 @@ A comprehensive web-based nutrition tracking application that helps you monitor 
 
 5. **Open your browser:**
    Navigate to `http://localhost:3000`
+
+## 🌐 Live Demo
+
+Experience NutriStats in action with our live deployment on Google Cloud Platform:
+
+**🔗 Demo URL:** [http://34.59.48.42:8080](http://34.59.48.42:8080)
+
+**Demo Credentials:**
+- **Email:** demo@nutristats.com
+- **Password:** NutriStats1
+
+> **Note:** This is a demonstration environment deployed on Google Cloud Platform. Feel free to explore all features including meal tracking, weight management, food database, and analytics reporting.
+
+### Demo Features Available:
+- ✅ Complete meal tracking and macro calculations
+- ✅ Weight tracking with visual analytics
+- ✅ Food database management
+- ✅ Comprehensive nutrition reports
+- ✅ User settings and preferences
+- ✅ All authentication and security features
 
 ## Security Configuration
 
@@ -205,29 +230,39 @@ Stats/
 └── package.json          # Dependencies
 ```
 
-## Technologies Used
+## 🛠️ Technology Stack
 
-### Frontend
-- **HTML5** - Structure and markup
-- **CSS3** - Styling and layout
-- **JavaScript (ES6+)** - Interactive functionality
-- **Bootstrap 5** - UI components and responsive design
-- **Chart.js** - Data visualization (for future chart implementations)
+### Frontend Architecture
+- **Vanilla JavaScript (ES6+)** - Pure JavaScript implementation for optimal performance
+- **HTML5** - Semantic markup and modern web standards
+- **CSS3** - Advanced styling with custom properties and animations
+- **Bootstrap 5** - Responsive UI framework for professional interface
+- **Chart.js** - Data visualization for analytics and reporting
+- **Modular Design** - Component-based architecture for maintainability
 
-### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **SQLite3** - Database for persistent data storage
-- **bcryptjs** - Password hashing for authentication
-- **express-session** - Session management
+### Backend Infrastructure
+- **Node.js** - High-performance JavaScript runtime
+- **Express.js** - Robust web application framework
+- **SQLite3** - Lightweight, reliable database for data persistence
+- **JWT (JSON Web Tokens)** - Stateless authentication system
+- **bcryptjs** - Industry-standard password hashing
+- **UUID** - Unique identifier generation for data integrity
 
-### Features
-- **Real-time calculations** - Instant nutritional updates
-- **Responsive design** - Works on desktop and mobile
-- **SQLite database** - Reliable persistent data storage
-- **User authentication** - Secure user sessions
-- **Modular architecture** - Organized code structure
-- **Comprehensive documentation** - Built-in help system
+### Security & Performance
+- **JWT Authentication** - Secure, scalable user authentication
+- **Password Hashing** - Bcrypt with configurable salt rounds
+- **Input Validation** - Comprehensive data sanitization
+- **Rate Limiting** - API protection against abuse
+- **SQL Injection Protection** - Parameterized queries
+- **Session Management** - Secure token lifecycle
+
+### Development Features
+- **RESTful API Design** - Clean, predictable API endpoints
+- **Modular Architecture** - Organized, maintainable codebase
+- **Environment Configuration** - Flexible deployment settings
+- **Error Handling** - Comprehensive error management
+- **Logging System** - Detailed application monitoring
+- **Database Migrations** - Version-controlled schema management
 
 ## API Endpoints
 
@@ -270,30 +305,66 @@ The application uses SQLite with the following main tables:
 - **weight_entries** - Weight tracking records
 - **settings** - User preferences and configuration
 
-## Contributing
+## 🚀 Professional Applications
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+### For Athletes
+- **Competition Preparation** - Precise nutrition planning for peak performance
+- **Training Periodization** - Align nutrition with training phases
+- **Weight Management** - Strategic weight cuts and gains
+- **Recovery Optimization** - Post-training nutrition tracking
+- **Performance Correlation** - Link nutrition to performance outcomes
 
-## Documentation
+### For Sports Nutritionists
+- **Client Management** - Track multiple athlete nutrition plans
+- **Data Analysis** - Comprehensive reporting and analytics
+- **Meal Planning** - Create and manage detailed nutrition protocols
+- **Progress Monitoring** - Track client adherence and results
+- **Professional Reporting** - Generate detailed nutrition reports
 
-Visit `/docs` in the application for comprehensive documentation including:
-- Quick start guide
-- Feature explanations
-- How-to tutorials
-- Best practices
+### For Sports Teams
+- **Team Nutrition Management** - Coordinate nutrition across team members
+- **Performance Analytics** - Team-wide nutrition and performance correlation
+- **Standardized Protocols** - Implement consistent nutrition strategies
+- **Data Sharing** - Collaborate between nutritionists and coaches
 
-## License
+## 📈 Key Metrics & Analytics
 
-This project is for personal use. Feel free to modify and adapt to your needs.
+- **Macro Distribution Analysis** - Detailed carb/protein/fat breakdowns
+- **Caloric Periodization** - Training phase-specific calorie tracking
+- **Weight Trend Analysis** - Performance weight correlation
+- **Adherence Tracking** - Nutrition plan compliance monitoring
+- **Performance Correlation** - Link nutrition data to athletic performance
+- **Historical Comparisons** - Long-term trend analysis
 
-## Support
+## 🎯 Target Users
 
-For issues or questions, please create an issue in the repository or contact the maintainer.
+- **Professional Athletes** - Elite performers requiring precise nutrition
+- **Sports Nutritionists** - Professionals managing athlete nutrition
+- **Strength & Conditioning Coaches** - Coaches integrating nutrition with training
+- **Sports Science Teams** - Research and performance optimization teams
+- **Athletic Programs** - University and professional sports programs
+
+## 📚 Documentation
+
+The application includes comprehensive built-in documentation:
+- **Quick Start Guide** - Get up and running quickly
+- **Feature Documentation** - Detailed feature explanations
+- **Best Practices** - Professional nutrition tracking guidelines
+- **API Documentation** - Complete endpoint reference
+- **User Guides** - Step-by-step tutorials
+
+## 🔗 Related Projects
+
+- **[NutriStats-FrontEnd Automation](https://github.com/yourusername/NutriStats-FrontEnd-Automation)** - Comprehensive E2E testing suite with Playwright automation framework
+
+## 📄 License
+
+This project is designed for professional sports nutrition applications. Contact for licensing information.
+
+## 📞 Contact
+
+For professional inquiries, collaboration opportunities, or technical questions, please reach out through GitHub or professional channels.
 
 ---
 
-**Happy tracking! 🎯** 
+**Optimizing Athletic Performance Through Precision Nutrition** 🏆
