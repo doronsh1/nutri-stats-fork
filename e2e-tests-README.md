@@ -8,7 +8,7 @@
 
 > **🚧 Under Construction** - This testing framework is currently in active development and not yet complete.
 
-A comprehensive end-to-end testing framework for the **[NutriStats](https://github.com/TomerTTB/NutriStats)** professional athlete nutrition planning and analytics platform. Built with Playwright, this framework provides robust automated testing for all critical user workflows and features.
+A comprehensive end-to-end testing framework for the **[NutriStats](https://github.com/yourusername/NutriStats)** professional athlete nutrition planning and analytics platform. Built with Playwright, this framework provides robust automated testing for all critical user workflows and features.
 
 ## 🎯 Overview
 
@@ -16,7 +16,7 @@ This E2E testing suite validates the complete functionality of the NutriStats we
 
 ## 🔗 Related Project
 
-**Main Application:** [NutriStats - Pro Athlete Nutrition Planning & Analytics Platform](https://github.com/TomerTTB/NutriStats)
+**Main Application:** [NutriStats - Pro Athlete Nutrition Planning & Analytics Platform](https://github.com/yourusername/NutriStats)
 
 The NutriStats application is a comprehensive web-based nutrition tracking and analytics platform specifically designed for professional athletes and sports nutrition professionals, featuring advanced meal planning, macro tracking, weight management, and performance analytics.
 
@@ -116,8 +116,8 @@ e2e-tests/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/TomerTTB/nutri-stats-e2e-playwright.git
-   cd nutri-stats-e2e-playwright
+   git clone <repository-url>
+   cd nutristats-e2e-tests
    ```
 
 2. **Install dependencies:**
@@ -369,7 +369,7 @@ npm run test:ui
 
 ## 🔗 Links & Resources
 
-- **Main Application:** [NutriStats Repository](https://github.com/TomerTTB/NutriStats)
+- **Main Application:** [NutriStats Repository](https://github.com/yourusername/NutriStats)
 - **Live Demo:** [http://34.59.48.42:8080](http://34.59.48.42:8080)
 - **Playwright Documentation:** [https://playwright.dev](https://playwright.dev)
 - **Testing Best Practices:** [Internal Wiki](./docs/testing-guide.md)

@@ -48,6 +48,7 @@ const dailyMealsRoutes = require('./src/routes/dailyMealsRoutes');
 const settingsRoutes = require('./src/routes/settingsRoutes');
 const authRoutes = require('./src/routes/auth'); // Use JWT-based auth
 const weightRoutes = require('./src/routes/weightRoutes');
+const measurementsRoutes = require('./src/routes/measurementsRoutes');
 
 // Ensure data directory exists for SQLite database
 async function ensureDataDirectory() {
@@ -65,6 +66,7 @@ app.use('/api/daily-meals', dailyMealsRoutes); // Keep original path to maintain
 app.use('/api/meals', dailyMealsRoutes);       // Add new path for consistency
 app.use('/api/settings', settingsRoutes);
 app.use('/api/weight', weightRoutes);          // Weight tracking routes
+app.use('/api/measurements', measurementsRoutes); // Measurements tracking routes
 
 // Test route to verify API is working
 app.get('/api/test', (req, res) => {
@@ -118,6 +120,14 @@ async function startServer() {
         // Initialize database (non-blocking - server starts even if DB fails)
         initializeDatabaseAsync();
 
+        // Run database migrations
+        try {
+            const migrations = require('./src/database/migrations');
+            await migrations.migrate();
+        } catch (migrationError) {
+            console.error('⚠️  Migration failed, but server will continue:', migrationError.message);
+        }
+
         // Get version from package.json
         const packageJson = require('./package.json');
         const version = `v${packageJson.version}`;
@@ -137,6 +147,7 @@ async function startServer() {
             console.log('- GET  /api/meals        (Alias for daily-meals)');
             console.log('- GET  /api/settings     (Get settings - user-specific)');
             console.log('- GET  /api/weight       (Get weight entries - user-specific)');
+            console.log('- GET  /api/measurements (Get measurement entries - user-specific)');
             console.log('=================================');
         });
     } catch (error) {
