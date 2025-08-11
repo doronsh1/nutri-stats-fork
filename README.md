@@ -296,14 +296,54 @@ Stats/
 - `PUT /api/weight/:id` - Update weight entry
 - `DELETE /api/weight/:id` - Delete weight entry
 
-## Database Schema
+## 🗄️ Database Management
+
+NutriStats uses SQLite with a robust migration system for safe schema updates in both development and production environments.
+
+### Database Schema
 
 The application uses SQLite with the following main tables:
 - **users** - User accounts and authentication
 - **foods** - Food database with nutritional information
 - **meals** - Daily meal tracking data
 - **weight_entries** - Weight tracking records
+- **user_measurements** - Body measurements tracking (waist, thigh, arm)
 - **settings** - User preferences and configuration
+- **migration_history** - Database version control and migration tracking
+
+### Migration System
+
+The database uses a version-controlled migration system that ensures safe updates:
+
+**Check migration status:**
+```bash
+node scripts/migrate-database.js --status
+```
+
+**Run migrations (with dry-run first):**
+```bash
+node scripts/migrate-database.js --dry-run
+node scripts/migrate-database.js
+```
+
+**For production environments:**
+```bash
+# Via SSH on production server
+ssh user@server "cd /path/to/app && node scripts/migrate-database.js --status"
+ssh user@server "cd /path/to/app && node scripts/migrate-database.js"
+
+# Or using standalone script for better connection handling
+node scripts/standalone-migration.js /path/to/database.db --status
+```
+
+### Key Features
+- ✅ **Version Control** - Track all database changes
+- ✅ **Safe Updates** - Dry-run mode to preview changes
+- ✅ **Rollback Support** - Undo migrations if needed
+- ✅ **Production Ready** - Handles connection timing issues
+- ✅ **Zero Downtime** - Incremental schema updates
+
+For detailed database management instructions, see [DATABASE.md](DATABASE.md).
 
 ## 🚀 Professional Applications
 
