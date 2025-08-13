@@ -59,6 +59,8 @@ function calculateMacroStats() {
     const carbCalories = remainingCalories;
     const targetCarbG = carbCalories / 4; // carbs = 4 cal/g
 
+
+
     // Calculate percentages
     const proteinPercentage = goalCalories > 0 ? (proteinCalories / goalCalories) * 100 : 0;
     const fatPercentage = goalCalories > 0 ? (fatCalories / goalCalories) * 100 : 0;

@@ -243,11 +243,14 @@ class NutritionReports {
             const fatTarget = userWeight * dailyFatLevel;
             const fatAchievement = fatTarget > 0 ? (day.fat / fatTarget) * 100 : 0;
 
-            // For carbs, calculate remaining calories after protein and fat
-            const proteinCalories = totalProtein * 4;
-            const fatCalories = day.fat * 9;
-            const remainingCalories = Math.max(0, day.goalCalories - proteinCalories - fatCalories);
+            // For carbs, calculate remaining calories after TARGET protein and fat (not actual consumed)
+            // This should match the diary.html calculation which uses target values
+            const targetProteinCalories = day.proteinTarget * 4;
+            const targetFatCalories = fatTarget * 9;
+            const remainingCalories = Math.max(0, day.goalCalories - targetProteinCalories - targetFatCalories);
             const carbTarget = remainingCalories / 4;
+
+
             const carbAchievement = carbTarget > 0 ? (day.carbs / carbTarget) * 100 : 0;
 
             // Helper function to get status class based on achievement percentage
