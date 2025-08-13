@@ -117,15 +117,20 @@ async function startServer() {
         // Ensure data directory exists for SQLite database
         await ensureDataDirectory();
 
-        // Initialize database (non-blocking - server starts even if DB fails)
-        initializeDatabaseAsync();
+        // Skip database operations if SKIP_DB_DEPLOY is set
+        if (process.env.SKIP_DB_DEPLOY === 'true') {
+            console.log('⚠️  Database deployment skipped (SKIP_DB_DEPLOY=true)');
+        } else {
+            // Initialize database (non-blocking - server starts even if DB fails)
+            initializeDatabaseAsync();
 
-        // Run database migrations
-        try {
-            const migrations = require('./src/database/migrations');
-            await migrations.migrate();
-        } catch (migrationError) {
-            console.error('⚠️  Migration failed, but server will continue:', migrationError.message);
+            // Run database migrations
+            try {
+                const migrations = require('./src/database/migrations');
+                await migrations.migrate();
+            } catch (migrationError) {
+                console.error('⚠️  Migration failed, but server will continue:', migrationError.message);
+            }
         }
 
         // Get version from package.json

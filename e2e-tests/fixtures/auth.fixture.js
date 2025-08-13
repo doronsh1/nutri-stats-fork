@@ -2,17 +2,52 @@
  * Authentication fixtures for login/logout states and user management
  * Provides user authentication fixtures, test user creation/cleanup utilities,
  * and browser context/storage management fixtures
+ * 
+ * Supports both login and JWT authentication strategies based on AUTH_STRATEGY environment variable
  */
 
 const { test: base, expect } = require('@playwright/test');
 const ApiHelpers = require('../utils/api-helpers');
 const { generateTestUser } = require('../utils/data-generators');
-const DatabaseManager = require('../utils/database-manager');
+// Import auth module to register methods
+require('../auth');
+const { AuthMethodFactory } = require('../auth/factory/auth-method-factory');
+const { FixtureAdapter } = require('../auth/compatibility/fixture-adapter');
+const fs = require('fs').promises;
 
 /**
  * Authentication fixture that provides authenticated user context
+ * Supports both login and JWT authentication strategies
  */
 const authFixture = base.extend({
+  /**
+   * Storage state fixture - handles Playwright's storage state loading for JWT authentication
+   * This fixture provides the storage state path for JWT authentication or undefined for login
+   * Note: This fixture doesn't use Playwright's built-in storageState but manages it manually
+   */
+  storageState: async ({ }, use) => {
+    // Always return undefined to prevent Playwright from trying to read storage state files
+    // We handle storage state manually in the context and page fixtures
+    await use(undefined);
+  },
+
+  /**
+   * Authentication method fixture - creates the appropriate auth method based on configuration
+   */
+  authMethod: async ({ }, use) => {
+    const authStrategy = process.env.AUTH_STRATEGY || 'login';
+    const config = {
+      baseURL: process.env.BASE_URL || 'http://localhost:8080',
+      storageStatePath: process.env.AUTH_STORAGE_PATH || '.auth/user.json',
+      fallbackToLogin: process.env.JWT_FALLBACK_LOGIN === 'true',
+      persistStorageState: process.env.PERSIST_AUTH_STATE === 'true',
+      validateWithAPI: process.env.JWT_VALIDATE_API !== 'false'
+    };
+    
+    const method = AuthMethodFactory.create(authStrategy, config);
+    await use(method);
+  },
+
   /**
    * API helpers instance for authentication operations
    */
@@ -25,58 +60,33 @@ const authFixture = base.extend({
 
   /**
    * Test user fixture - creates and manages test user lifecycle
+   * Works with both login and JWT authentication methods
    */
-  testUser: async ({ apiHelpers }, use) => {
+  testUser: async ({ authMethod }, use) => {
+    const authStrategy = process.env.AUTH_STRATEGY || 'login';
+    
+    // Create user and authenticate for both methods
     const userData = generateTestUser();
-    let createdUser = null;
-    let authToken = null;
+    let authState = null;
 
     try {
-      // Register the test user
-      const registerResponse = await apiHelpers.registerUser(userData);
-
-      if (!registerResponse.ok) {
-        throw new Error(`Failed to register test user: ${JSON.stringify(registerResponse.data)}`);
-      }
-
-      createdUser = {
+      authState = await authMethod.authenticate(userData);
+      
+      const testUser = {
         ...userData,
-        id: registerResponse.data.id || registerResponse.data.user?.id,
-        ...registerResponse.data
+        ...authState.user,
+        token: authState.token,
+        authState: authState
       };
 
-      // Login to get auth token
-      const loginResponse = await apiHelpers.loginUser({
-        email: userData.email,
-        password: userData.password
-      });
-
-      if (!loginResponse.ok) {
-        throw new Error(`Failed to login test user: ${JSON.stringify(loginResponse.data)}`);
-      }
-
-      authToken = loginResponse.data.token;
-      createdUser.token = authToken;
-
-      await use(createdUser);
+      await use(testUser);
 
     } finally {
       // Cleanup: delete the test user if it was created
-      // Set CLEANUP_ENABLED=false to disable cleanup entirely
-      if (createdUser && process.env.CLEANUP_ENABLED !== 'false') {
+      if (authState && process.env.CLEANUP_ENABLED !== 'false') {
         try {
-          if (authToken) {
-            apiHelpers.setAuthToken(authToken);
-          }
-          // Add timeout to prevent hanging cleanup
-          const cleanupPromise = apiHelpers.cleanupUserData();
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Cleanup timeout')), 5000)
-          );
-          
-          await Promise.race([cleanupPromise, timeoutPromise]);
+          await FixtureAdapter.cleanupAuthResources(authMethod, authState);
         } catch (error) {
-          // Silently ignore cleanup errors - they don't affect test results
           if (process.env.DEBUG_CLEANUP === 'true') {
             console.warn('Failed to cleanup test user:', error.message);
           }
@@ -87,28 +97,56 @@ const authFixture = base.extend({
 
   /**
    * Authenticated page fixture - provides page with logged-in user context
+   * Supports JWT, login, and ui-login authentication methods
    */
-  authenticatedPage: async ({ page, testUser }, use) => {
-    // Set authentication token in localStorage
-    await page.goto('/');
+  authenticatedPage: async ({ page, testUser, authMethod }, use) => {
+    const authStrategy = process.env.AUTH_STRATEGY || 'login';
+    
+    if (authStrategy === 'jwt') {
+      // For JWT method, set up authentication manually since we're not using global storage state
+      await page.goto('/');
 
-    await page.evaluate((token) => {
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify({
-        id: 'test-user-id',
-        username: 'testuser',
-        email: 'test@example.com'
-      }));
-    }, testUser.token);
+      await page.evaluate((authData) => {
+        localStorage.setItem('authToken', authData.token);
+        localStorage.setItem('user', JSON.stringify({
+          id: authData.id || 'test-user-id',
+          username: authData.username || 'testuser',
+          email: authData.email || 'test@example.com'
+        }));
+      }, testUser);
 
-    // Navigate to a protected page to verify authentication
-    await page.goto('/diary.html');
+      // Navigate to a protected page to verify authentication
+      await page.goto('/diary.html');
+      await page.waitForLoadState('networkidle');
+      
+      // Verify we're not redirected to login
+      expect(page.url()).not.toContain('login.html');
+    } else if (authStrategy === 'ui-login') {
+      // For ui-login method, use the auth method to setup browser context
+      await authMethod.setupBrowserContext(page, testUser.authState);
+      
+      // Verify we're on a protected page after UI login
+      expect(page.url()).not.toContain('login.html');
+    } else {
+      // For login method, setup authentication manually
+      await page.goto('/');
 
-    // Wait for page to load and verify authentication
-    await page.waitForLoadState('networkidle');
+      await page.evaluate((authData) => {
+        localStorage.setItem('authToken', authData.token);
+        localStorage.setItem('user', JSON.stringify({
+          id: authData.id || 'test-user-id',
+          username: authData.username || 'testuser',
+          email: authData.email || 'test@example.com'
+        }));
+      }, testUser);
 
-    // Verify we're not redirected to login
-    expect(page.url()).not.toContain('login.html');
+      // Navigate to a protected page to verify authentication
+      await page.goto('/diary.html');
+      await page.waitForLoadState('networkidle');
+
+      // Verify we're not redirected to login
+      expect(page.url()).not.toContain('login.html');
+    }
 
     await use(page);
   },
@@ -132,29 +170,67 @@ const authFixture = base.extend({
 
   /**
    * Authenticated context fixture - provides browser context with auth state
+   * Supports JWT, login, and ui-login authentication methods
    */
-  authenticatedContext: async ({ browser, testUser }, use) => {
-    const context = await browser.newContext({
-      storageState: undefined,
-      ignoreHTTPSErrors: true,
-      viewport: { width: 1280, height: 720 }
-    });
+  authenticatedContext: async ({ browser, testUser, authMethod }, use) => {
+    const authStrategy = process.env.AUTH_STRATEGY || 'login';
+    let context;
 
-    // Create a page to set up authentication state
-    const setupPage = await context.newPage();
-    await setupPage.goto('/');
+    if (authStrategy === 'jwt') {
+      // For JWT method, create storage state and use it
+      try {
+        const storageStateData = await authMethod.createStorageState(testUser.token, testUser);
+        
+        context = await browser.newContext({
+          storageState: storageStateData,
+          ignoreHTTPSErrors: true,
+          viewport: { width: 1280, height: 720 }
+        });
+      } catch (error) {
+        console.warn('JWT storage state failed, falling back to manual setup:', error.message);
+        // Fallback to manual setup
+        context = await browser.newContext({
+          storageState: undefined,
+          ignoreHTTPSErrors: true,
+          viewport: { width: 1280, height: 720 }
+        });
+        await authMethod.setupBrowserContext(context, testUser.authState);
+      }
+    } else if (authStrategy === 'ui-login') {
+      // For ui-login method, create context and use auth method to setup
+      context = await browser.newContext({
+        storageState: undefined,
+        ignoreHTTPSErrors: true,
+        viewport: { width: 1280, height: 720 }
+      });
 
-    // Set authentication data in storage
-    await setupPage.evaluate((userData) => {
-      localStorage.setItem('authToken', userData.token);
-      localStorage.setItem('user', JSON.stringify({
-        id: userData.id,
-        username: userData.username,
-        email: userData.email
-      }));
-    }, testUser);
+      // Use the auth method to setup browser context with UI login
+      await authMethod.setupBrowserContext(context, testUser.authState);
+    } else {
+      // For login method, create context and setup authentication manually
+      context = await browser.newContext({
+        storageState: undefined,
+        ignoreHTTPSErrors: true,
+        viewport: { width: 1280, height: 720 }
+      });
 
-    await setupPage.close();
+      // Create a page to set up authentication state
+      const setupPage = await context.newPage();
+      await setupPage.goto('/');
+
+      // Set authentication data in storage
+      await setupPage.evaluate((userData) => {
+        localStorage.setItem('authToken', userData.token);
+        localStorage.setItem('user', JSON.stringify({
+          id: userData.id,
+          username: userData.username,
+          email: userData.email
+        }));
+      }, testUser);
+
+      await setupPage.close();
+    }
+
     await use(context);
     await context.close();
   }

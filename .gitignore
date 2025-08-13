@@ -116,7 +116,12 @@ production-*.db
 *-production.db
 backup-*.db
 
+# Database files - NEVER deploy to production
+src/data/*.db
+src/data/nutrition_app.db
+src/data/test_*.db
+src/data/backup_*.db
+
 # Local copies of production databases (if you copy them for testing)
 src/data/production_*.db
-src/data/*_production.db
-src/data/backup_*.db 
+src/data/*_production.db 

@@ -145,7 +145,7 @@ class ApiHelpers {
    * Get current user profile
    */
   async getCurrentUser() {
-    return await this.makeRequest('GET', '/api/users/profile');
+    return await this.makeRequest('GET', '/api/auth/profile');
   }
 
   // Food API methods

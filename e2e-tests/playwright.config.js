@@ -1,13 +1,45 @@
 const { defineConfig, devices } = require('@playwright/test');
+const { authConfig } = require('./config/auth-config');
+
+// Load environment variables from .env.test file
+require('dotenv').config({ path: '.env.test' });
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
+
+// Load and validate authentication configuration
+let config;
+try {
+  // Note: We can't use async/await at module level, so we'll validate in globalSetup
+  // For now, use basic validation for immediate config needs
+  const authStrategy = process.env.AUTH_STRATEGY || 'login';
+  const isJWTAuth = authStrategy === 'jwt';
+  
+  // Basic validation
+  if (!['login', 'jwt', 'ui-login'].includes(authStrategy)) {
+    throw new Error(`Invalid AUTH_STRATEGY: ${authStrategy}. Must be 'login', 'jwt', or 'ui-login'`);
+  }
+  
+  config = { authStrategy, isJWTAuth };
+} catch (error) {
+  console.error('❌ Configuration validation failed:', error.message);
+  process.exit(1);
+}
+
+// Conditional global setup based on authentication strategy
+const getGlobalSetup = () => {
+  if (config.isJWTAuth) {
+    return require.resolve('./auth.setup.js');
+  }
+  return require.resolve('./global-setup.js');
+};
+
 module.exports = defineConfig({
   testDir: './tests',
   
-  /* Global setup and teardown */
-  globalSetup: require.resolve('./global-setup.js'),
+  /* Global setup and teardown - conditional based on auth strategy */
+  globalSetup: getGlobalSetup(),
   globalTeardown: require.resolve('./global-teardown.js'),
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -31,6 +63,11 @@ module.exports = defineConfig({
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.BASE_URL || 'http://localhost:8080',
 
+    /* Storage state for JWT authentication - conditional based on auth strategy */
+    ...(config.isJWTAuth && {
+      storageState: process.env.AUTH_STORAGE_PATH || '.auth/user.json'
+    }),
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     
@@ -50,9 +87,19 @@ module.exports = defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // Setup project for JWT authentication - runs auth.setup.js
+    ...(config.isJWTAuth ? [{
+      name: 'setup',
+      testMatch: /.*\.setup\.js/
+    }] : []),
+    
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      // Add dependency on setup project for JWT authentication
+      ...(config.isJWTAuth && {
+        dependencies: ['setup']
+      })
     }
     // },
 
