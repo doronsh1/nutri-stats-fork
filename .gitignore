@@ -117,9 +117,9 @@ production-*.db
 backup-*.db
 
 # Database files - NEVER commit to git
-*.db
-src/data/*.db
-src/data/nutrition_app.db
+# *.db
+# src/data/*.db
+# src/data/nutrition_app.db
 src/data/test_*.db
 src/data/backup_*.db
 
