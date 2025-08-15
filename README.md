@@ -199,43 +199,43 @@ LOCKOUT_TIME_MINUTES=15
 
 ```
 Stats/
-├── public/                 # Frontend files
-│   ├── components/        # Reusable HTML components
-│   ├── css/              # Stylesheets
-│   │   ├── common.css    # Shared styles
-│   │   ├── components/   # Component-specific styles
-│   │   └── pages/        # Page-specific styles
-│   ├── js/               # JavaScript modules
-│   │   ├── components/   # UI components
-│   │   ├── pages/        # Page-specific logic
-│   │   └── utils/        # Utility functions
-│   ├── docs/             # Documentation site
-│   │   ├── features/     # Feature documentation
-│   │   ├── guides/       # How-to guides
+├── public/                  # Frontend files
+│   ├── components/          # Reusable HTML components
+│   ├── css/                 # Stylesheets
+│   │   ├── common.css       # Shared styles
+│   │   ├── components/      # Component-specific styles
+│   │   └── pages/           # Page-specific styles
+│   ├── js/                  # JavaScript modules
+│   │   ├── components/      # UI components
+│   │   ├── pages/           # Page-specific logic
+│   │   └── utils/           # Utility functions
+│   ├── docs/                # Documentation site
+│   │   ├── features/        # Feature documentation
+│   │   ├── guides/          # How-to guides
 │   │   └── getting-started/ # Setup guides
-│   └── *.html            # Main pages
-├── src/                   # Backend source code
-│   ├── database/         # Database services and models
+│   └── *.html               # Main pages
+├── src/                     # Backend source code
+│   ├── database/            # Database services and models
 │   │   ├── userService.js
 │   │   ├── weightService.js
 │   │   ├── settingsService.js
 │   │   ├── foodService.js
 │   │   └── mealService.js
-│   ├── routes/           # API routes
+│   ├── routes/              # API routes
 │   │   ├── authRoutes.js
 │   │   ├── dailyMealsRoutes.js
 │   │   ├── foodsRoutes.js
 │   │   ├── settingsRoutes.js
 │   │   └── weightRoutes.js
-│   ├── middleware/       # Express middleware
+│   ├── middleware/          # Express middleware
 │   │   └── auth.js
-│   └── data/            # SQLite database storage
-├── scripts/              # Deployment & database scripts
+│   └── data/                # SQLite database storage
+├── scripts/                 # Deployment & database scripts
 │   ├── init-database.js     # Database initialization
 │   ├── migrate-database.js  # Migration management
 │   └── deploy-production.sh # Safe production deployment
-├── server.js             # Express server
-└── package.json          # Dependencies
+├── server.js                # Express server
+└── package.json             # Dependencies
 ```
 
 ## 🛠️ Technology Stack
