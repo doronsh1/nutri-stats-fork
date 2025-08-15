@@ -59,7 +59,7 @@ jobs:
           
           # Initialize/migrate database (safe - won't overwrite data)
           echo "🗄️ Initializing database..."
-          node scripts/init-database.js
+          node scripts/fix-migration.js
           
           # Start/restart application
           echo "🚀 Starting application..."

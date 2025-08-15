@@ -93,8 +93,18 @@ const query = (sql, params = []) => {
     });
 };
 
-// Check if database is available
-const isDatabaseAvailable = () => dbAvailable;
+// Check if database is available (with retry logic)
+const isDatabaseAvailable = () => {
+    // If not available, try to reinitialize once
+    if (!dbAvailable && !db) {
+        initializeDatabase();
+        // Give it a moment to connect
+        return new Promise(resolve => {
+            setTimeout(() => resolve(dbAvailable), 200);
+        });
+    }
+    return dbAvailable;
+};
 
 // Initialize on module load
 initializeDatabase();

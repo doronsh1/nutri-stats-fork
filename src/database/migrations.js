@@ -42,7 +42,8 @@ class DatabaseMigrations {
     }
 
     async checkDatabaseStatus() {
-        if (isDatabaseAvailable()) {
+        const available = await isDatabaseAvailable();
+        if (available) {
             console.log('🔄 Migration system using SQLite database');
             return true;
         } else {
