@@ -6,7 +6,7 @@ yarn-error.log*
 
 # folder
 kiro/
-# e2e-tests/
+e2e-tests/
 
 # Runtime data
 pids
@@ -116,7 +116,7 @@ production-*.db
 *-production.db
 backup-*.db
 
-# Database files - NEVER commit to git
+# Database files - NEVER commit to git (except e2e-tests)
 *.db
 src/data/*.db
 src/data/nutrition_app.db
@@ -127,5 +127,6 @@ src/data/backup_*.db
 src/data/production_*.db
 src/data/*_production.db
 
-# Any database files anywhere in the project
-**/*.db 
+# Any database files anywhere in the project EXCEPT e2e-tests
+**/*.db
+!e2e-tests/**/*.db 
