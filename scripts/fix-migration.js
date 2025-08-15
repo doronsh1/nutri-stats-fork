@@ -34,19 +34,19 @@ function connectToDatabase() {
 // Query function
 function query(db, sql, params = []) {
     return new Promise((resolve, reject) => {
-        if (sql.trim().toUpperCase().startsWith('INSERT') || 
-            sql.trim().toUpperCase().startsWith('UPDATE') || 
+        if (sql.trim().toUpperCase().startsWith('INSERT') ||
+            sql.trim().toUpperCase().startsWith('UPDATE') ||
             sql.trim().toUpperCase().startsWith('DELETE') ||
             sql.trim().toUpperCase().startsWith('CREATE')) {
-            
-            db.run(sql, params, function(err) {
+
+            db.run(sql, params, function (err) {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve({ 
-                        rows: [], 
+                    resolve({
+                        rows: [],
                         lastInsertRowid: this.lastID,
-                        changes: this.changes 
+                        changes: this.changes
                     });
                 }
             });
@@ -101,11 +101,11 @@ const migrations = [
 
 async function runMigrations() {
     let db;
-    
+
     try {
         // Connect to database
         db = await connectToDatabase();
-        
+
         // Create migration history table first
         console.log('📋 Creating migration history table...');
         await query(db, `
@@ -117,44 +117,44 @@ async function runMigrations() {
                 executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        
+
         // Get current version
         const result = await query(db, `
             SELECT MAX(version) as current_version 
             FROM migration_history
         `);
-        
+
         const currentVersion = result.rows[0]?.current_version || 0;
         console.log(`📊 Current database version: ${currentVersion}`);
-        
+
         // Find pending migrations
         const pendingMigrations = migrations.filter(m => m.version > currentVersion);
-        
+
         if (pendingMigrations.length === 0) {
             console.log('✅ Database is up to date');
             return;
         }
-        
+
         console.log(`🔄 Running ${pendingMigrations.length} pending migrations...`);
-        
+
         // Run each migration
         for (const migration of pendingMigrations) {
             console.log(`🔄 Running migration ${migration.version}: ${migration.name}`);
-            
+
             // Execute migration
             await query(db, migration.up);
-            
+
             // Record migration
             await query(db, `
                 INSERT INTO migration_history (version, name, description)
                 VALUES (?, ?, ?)
             `, [migration.version, migration.name, migration.description]);
-            
+
             console.log(`✅ Migration ${migration.version} completed`);
         }
-        
+
         console.log('🎉 All migrations completed successfully!');
-        
+
     } catch (error) {
         console.error('❌ Migration failed:', error.message);
         process.exit(1);
