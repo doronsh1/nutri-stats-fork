@@ -24,9 +24,49 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa tomer@${{ secrets.VM_EXTERNAL_IP }} << 'EOF'
           cd /home/tomer
-          rm -rf Stats
+          
+          # Backup database if it exists
+          if [ -f Stats/src/data/nutrition_app.db ]; then
+            echo "📦 Backing up existing database..."
+            cp Stats/src/data/nutrition_app.db /tmp/nutrition_app.db.backup
+          fi
+          
+          # Remove old code but preserve data directory
+          if [ -d Stats ]; then
+            echo "🗂️ Preserving data directory..."
+            mkdir -p /tmp/stats_data_backup
+            if [ -d Stats/src/data ]; then
+              cp -r Stats/src/data/* /tmp/stats_data_backup/ 2>/dev/null || true
+            fi
+            rm -rf Stats
+          fi
+          
+          # Clone fresh code
+          echo "📥 Cloning latest code..."
           git clone https://github.com/TomerTTB/Stats.git
           cd Stats
+          
+          # Restore data directory
+          echo "🔄 Restoring data..."
+          mkdir -p src/data
+          if [ -d /tmp/stats_data_backup ]; then
+            cp -r /tmp/stats_data_backup/* src/data/ 2>/dev/null || true
+          fi
+          
+          # Install dependencies
+          echo "📦 Installing dependencies..."
           npm install
+          
+          # Initialize/migrate database (safe - won't overwrite data)
+          echo "🗄️ Initializing database..."
+          node scripts/init-database.js
+          
+          # Start/restart application
+          echo "🚀 Starting application..."
           pm2 start npm --name stats-app -- start || pm2 restart stats-app
+          
+          # Cleanup temporary files
+          rm -rf /tmp/stats_data_backup /tmp/nutrition_app.db.backup
+          
+          echo "✅ Deployment completed successfully!"
         EOF
