@@ -63,7 +63,9 @@ jobs:
           
           # Start/restart application
           echo "🚀 Starting application..."
-          pm2 start npm --name stats-app -- start || pm2 restart stats-app
+          pm2 delete stats-app 2>/dev/null || true
+          pm2 start npm --name stats-app -- start
+          pm2 save
           
           # Cleanup temporary files
           rm -rf /tmp/stats_data_backup /tmp/nutrition_app.db.backup
