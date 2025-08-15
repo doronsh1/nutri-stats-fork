@@ -83,12 +83,17 @@ NutriStats is engineered to meet the demanding nutritional requirements of profe
    # Edit .env file with your secure values
    ```
 
-4. **Start the server:**
+4. **Initialize database:**
+   ```bash
+   node scripts/init-database.js
+   ```
+
+5. **Start the server:**
    ```bash
    npm start
    ```
 
-5. **Open your browser:**
+6. **Open your browser:**
    Navigate to `http://localhost:3000`
 
 ## 🌐 Live Demo
@@ -225,7 +230,10 @@ Stats/
 │   ├── middleware/       # Express middleware
 │   │   └── auth.js
 │   └── data/            # SQLite database storage
-├── scripts/              # Utility scripts
+├── scripts/              # Deployment & database scripts
+│   ├── init-database.js     # Database initialization
+│   ├── migrate-database.js  # Migration management
+│   └── deploy-production.sh # Safe production deployment
 ├── server.js             # Express server
 └── package.json          # Dependencies
 ```
@@ -263,6 +271,8 @@ Stats/
 - **Error Handling** - Comprehensive error management
 - **Logging System** - Detailed application monitoring
 - **Database Migrations** - Version-controlled schema management
+- **Safe Deployment** - Zero-data-loss production deployments
+- **Automated Backups** - Database protection during updates
 
 ## API Endpoints
 
@@ -296,6 +306,43 @@ Stats/
 - `PUT /api/weight/:id` - Update weight entry
 - `DELETE /api/weight/:id` - Delete weight entry
 
+## 🚀 Deployment
+
+### Production Deployment (Safe & Automated)
+
+NutriStats features a **zero-data-loss deployment system** that preserves customer data during updates:
+
+**Automatic Deployment (Recommended):**
+```bash
+git add .
+git commit -m "Your changes"
+git push origin main
+```
+
+The GitHub Actions workflow automatically:
+- ✅ **Preserves database** during code updates
+- ✅ **Backs up data** before deployment  
+- ✅ **Runs migrations** safely without data loss
+- ✅ **Initializes database** if missing
+- ✅ **Restarts application** seamlessly
+
+**Manual Deployment (For critical updates):**
+```bash
+# SSH to production server
+ssh user@server
+cd /path/to/app
+bash scripts/deploy-production.sh
+```
+
+### Database Safety Features
+- 🛡️ **Database preservation** during deployments
+- 📦 **Automatic backups** before each update
+- 🔄 **Safe migrations** that never overwrite data
+- 🆕 **Auto-initialization** for fresh deployments
+- 📊 **Migration tracking** and rollback support
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## 🗄️ Database Management
 
 NutriStats uses SQLite with a robust migration system for safe schema updates in both development and production environments.
@@ -315,6 +362,11 @@ The application uses SQLite with the following main tables:
 
 The database uses a version-controlled migration system that ensures safe updates:
 
+**Initialize database:**
+```bash
+node scripts/init-database.js
+```
+
 **Check migration status:**
 ```bash
 node scripts/migrate-database.js --status
@@ -326,22 +378,13 @@ node scripts/migrate-database.js --dry-run
 node scripts/migrate-database.js
 ```
 
-**For production environments:**
-```bash
-# Via SSH on production server
-ssh user@server "cd /path/to/app && node scripts/migrate-database.js --status"
-ssh user@server "cd /path/to/app && node scripts/migrate-database.js"
-
-# Or using standalone script for better connection handling
-node scripts/standalone-migration.js /path/to/database.db --status
-```
-
 ### Key Features
+- ✅ **Zero Data Loss** - Deployments never overwrite customer data
 - ✅ **Version Control** - Track all database changes
 - ✅ **Safe Updates** - Dry-run mode to preview changes
 - ✅ **Rollback Support** - Undo migrations if needed
 - ✅ **Production Ready** - Handles connection timing issues
-- ✅ **Zero Downtime** - Incremental schema updates
+- ✅ **Auto-Backup** - Automatic backups before deployments
 
 For detailed database management instructions, see [DATABASE.md](DATABASE.md).
 
