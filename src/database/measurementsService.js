@@ -250,7 +250,7 @@ class MeasurementsService {
             if (result.rows.length > 0) {
                 const stats = result.rows[0];
                 
-                // Get latest change and overall change
+                // Get latest change, overall change, and average change
                 const changeResult = await query(`
                     SELECT 
                         curr.value as current_value,
@@ -275,8 +275,27 @@ class MeasurementsService {
                     LIMIT 1
                 `, [userId, measurementType]);
 
+                // Calculate average change between consecutive measurements
+                const avgChangeResult = await query(`
+                    SELECT AVG(curr.value - prev.value) as avg_change
+                    FROM user_measurements curr
+                    INNER JOIN user_measurements prev ON (
+                        prev.user_id = curr.user_id 
+                        AND prev.measurement_type = curr.measurement_type
+                        AND prev.date < curr.date
+                        AND prev.date = (
+                            SELECT MAX(date) FROM user_measurements p2
+                            WHERE p2.user_id = curr.user_id 
+                            AND p2.measurement_type = curr.measurement_type
+                            AND p2.date < curr.date
+                        )
+                    )
+                    WHERE curr.user_id = ? AND curr.measurement_type = ?
+                `, [userId, measurementType]);
+
                 let latestChange = 0;
                 let overallChange = 0;
+                let avgChange = 0;
                 
                 if (changeResult.rows.length > 0) {
                     const result = changeResult.rows[0];
@@ -292,11 +311,16 @@ class MeasurementsService {
                     }
                 }
 
+                // Get average change
+                if (avgChangeResult.rows.length > 0 && avgChangeResult.rows[0].avg_change !== null) {
+                    avgChange = avgChangeResult.rows[0].avg_change;
+                }
+
                 return {
                     totalEntries: stats.total_entries,
                     minValue: stats.min_value,
                     maxValue: stats.max_value,
-                    avgValue: parseFloat(stats.avg_value?.toFixed(2)) || 0,
+                    avgChange: parseFloat(avgChange.toFixed(2)) || 0,
                     firstEntryDate: stats.first_entry_date,
                     lastEntryDate: stats.last_entry_date,
                     latestChange: parseFloat(latestChange.toFixed(2)),

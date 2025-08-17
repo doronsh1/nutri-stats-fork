@@ -139,7 +139,7 @@ class MeasurementsManager {
                 totalEntries: 0,
                 minValue: 0,
                 maxValue: 0,
-                avgValue: 0,
+                avgChange: 0,
                 firstEntryDate: null,
                 lastEntryDate: null,
                 latestChange: 0,
@@ -246,7 +246,14 @@ class MeasurementsManager {
         }
 
         if (avgElement) {
-            avgElement.textContent = stats.totalEntries > 0 ? `${stats.avgValue} ${unit}` : '-';
+            if (stats.avgChange !== 0 && stats.totalEntries > 1) {
+                const changeText = stats.avgChange > 0 ? `+${stats.avgChange}` : `${stats.avgChange}`;
+                avgElement.textContent = `${changeText} ${unit}`;
+                avgElement.className = `stat-value ${stats.avgChange > 0 ? 'text-success' : 'text-danger'}`;
+            } else {
+                avgElement.textContent = '-';
+                avgElement.className = 'stat-value';
+            }
         }
 
         if (progressElement) {
