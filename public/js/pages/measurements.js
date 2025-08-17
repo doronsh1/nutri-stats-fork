@@ -25,10 +25,10 @@ class MeasurementsManager {
             await this.loadAllMeasurements();
             this.setDefaultDate();
             this.updateUnitSystem();
-            
+
             // Load Waist data by default
             await this.loadMeasurementTypeData('Waist');
-            
+
             this.initialized = true;
             console.log('MeasurementsManager initialized successfully');
         } catch (error) {
@@ -152,7 +152,7 @@ class MeasurementsManager {
         // When user selects a type in the form, also update the main selector
         const selectedType = e.target.value;
         const mainSelect = document.getElementById('measurementTypeSelect');
-        
+
         if (selectedType && mainSelect) {
             mainSelect.value = selectedType;
             this.loadMeasurementTypeData(selectedType);
@@ -162,10 +162,10 @@ class MeasurementsManager {
     async handleMeasurementTypeChange(e) {
         const selectedType = e.target.value;
         const typeInput = document.getElementById('measurementTypeInput');
-        
+
         if (selectedType && typeInput) {
             typeInput.value = selectedType;
-            
+
             // Load data for this measurement type
             await this.loadMeasurementTypeData(selectedType);
         }
@@ -173,7 +173,7 @@ class MeasurementsManager {
 
     async loadMeasurementTypeData(measurementType) {
         this.currentMeasurementType = measurementType;
-        
+
         try {
             // Load measurements and stats for this type
             const [measurements, stats] = await Promise.all([
@@ -222,7 +222,7 @@ class MeasurementsManager {
         if (currentElement) {
             currentElement.textContent = stats.totalEntries > 0 ? `${stats.maxValue} ${unit}` : '-';
         }
-        
+
         if (latestChangeElement) {
             if (stats.latestChange !== 0) {
                 const changeText = stats.latestChange > 0 ? `+${stats.latestChange}` : `${stats.latestChange}`;
@@ -233,7 +233,7 @@ class MeasurementsManager {
                 latestChangeElement.className = 'stat-value';
             }
         }
-        
+
         if (overallChangeElement) {
             if (stats.overallChange !== 0) {
                 const changeText = stats.overallChange > 0 ? `+${stats.overallChange}` : `${stats.overallChange}`;
@@ -244,11 +244,11 @@ class MeasurementsManager {
                 overallChangeElement.className = 'stat-value';
             }
         }
-        
+
         if (avgElement) {
             avgElement.textContent = stats.totalEntries > 0 ? `${stats.avgValue} ${unit}` : '-';
         }
-        
+
         if (progressElement) {
             // Calculate progress trend like weight tracking
             let progressText = '-';
@@ -270,7 +270,7 @@ class MeasurementsManager {
     updateMeasurementChart(measurements, measurementType) {
         const canvas = document.getElementById('measurementChart');
         const titleElement = document.getElementById('measurementChartTitle');
-        
+
         // Always update title regardless of data
         if (titleElement) {
             titleElement.textContent = `${measurementType} Progress`;
@@ -337,7 +337,7 @@ class MeasurementsManager {
                         mode: 'index',
                         intersect: false,
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 return `${context.dataset.label}: ${context.parsed.y} ${unit}`;
                             }
                         }
@@ -372,7 +372,7 @@ class MeasurementsManager {
     updateMeasurementTable(measurements, measurementType) {
         const tableBody = document.querySelector('#measurementEntriesTable tbody');
         const titleElement = document.getElementById('measurementTableTitle');
-        
+
         if (!tableBody) return;
 
         // Always update title regardless of data
@@ -395,7 +395,7 @@ class MeasurementsManager {
         for (let i = 0; i < sortedMeasurements.length; i++) {
             const current = sortedMeasurements[i];
             const previous = sortedMeasurements[i + 1]; // Next in array is previous in time
-            
+
             if (previous) {
                 current.change = current.value - previous.value;
             } else {
@@ -403,33 +403,74 @@ class MeasurementsManager {
             }
         }
 
-        // Populate table
+        // Populate table with edit-in-place functionality
         sortedMeasurements.forEach(entry => {
             const row = document.createElement('tr');
-            
-            const changeText = entry.change !== 0 ? 
-                (entry.change > 0 ? `+${entry.change.toFixed(1)}` : `${entry.change.toFixed(1)}`) : 
+            row.setAttribute('data-entry-id', entry.id);
+
+            const changeText = entry.change !== 0 ?
+                (entry.change > 0 ? `+${entry.change.toFixed(1)}` : `${entry.change.toFixed(1)}`) :
                 '-';
             const changeClass = entry.change > 0 ? 'text-success' : entry.change < 0 ? 'text-danger' : '';
-            
+
             row.innerHTML = `
-                <td>${new Date(entry.date).toLocaleDateString()}</td>
-                <td>${entry.measurementType}</td>
-                <td>${entry.value} ${entry.unit}</td>
-                <td>${entry.unit}</td>
-                <td class="${changeClass}">${changeText}</td>
-                <td>${entry.note || '-'}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary me-1" onclick="measurementsManager.editMeasurement('${entry.id}')">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="measurementsManager.deleteMeasurement('${entry.id}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <span class="measurement-value">${new Date(entry.date).toLocaleDateString()}</span>
+                    <input type="date" class="form-control measurement-edit d-none" value="${entry.date}">
+                </td>
+                <td>
+                    <span class="measurement-value">${entry.measurementType}</span>
+                    <select class="form-select measurement-edit d-none">
+                        <option value="Waist" ${entry.measurementType === 'Waist' ? 'selected' : ''}>Waist</option>
+                        <option value="Thigh" ${entry.measurementType === 'Thigh' ? 'selected' : ''}>Thigh</option>
+                        <option value="Arm" ${entry.measurementType === 'Arm' ? 'selected' : ''}>Arm</option>
+                    </select>
+                </td>
+                <td>
+                    <span class="measurement-value">${entry.value} ${entry.unit}</span>
+                    <div class="input-group measurement-edit d-none">
+                        <input type="number" class="form-control measurement-edit" value="${entry.value}" step="0.1" min="0">
+                        <span class="input-group-text">${entry.unit}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="measurement-value">${entry.unit}</span>
+                </td>
+                <td class="${changeClass}">${changeText}</td>
+                <td>
+                    <span class="measurement-value">${entry.note || '-'}</span>
+                    <input type="text" class="form-control measurement-edit d-none" value="${entry.note || ''}" placeholder="Note">
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary edit-btn">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-success save-btn d-none">
+                            <i class="bi bi-check"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary cancel-btn d-none">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger delete-btn">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </td>
             `;
-            
+
             tableBody.appendChild(row);
+
+            // Add event listeners for this row
+            const editBtn = row.querySelector('.edit-btn');
+            const saveBtn = row.querySelector('.save-btn');
+            const cancelBtn = row.querySelector('.cancel-btn');
+            const deleteBtn = row.querySelector('.delete-btn');
+
+            editBtn.addEventListener('click', () => this.handleEditInline(row));
+            saveBtn.addEventListener('click', () => this.handleSaveInline(row));
+            cancelBtn.addEventListener('click', () => this.handleCancelInline(row));
+            deleteBtn.addEventListener('click', () => this.deleteMeasurement(entry.id));
         });
     }
 
@@ -437,10 +478,9 @@ class MeasurementsManager {
         console.log('📝 Form submit handler called');
         e.preventDefault();
         e.stopPropagation();
-        
+
         const form = e.target;
-        const formData = new FormData(form);
-        
+
         // Get the unit from the display
         const unitDisplay = document.getElementById('measurementUnitDisplay');
         const measurementData = {
@@ -467,22 +507,22 @@ class MeasurementsManager {
         try {
             console.log('📏 Attempting to add measurement:', measurementData);
             const response = await API.measurements.add(measurementData);
-            
+
             if (response.ok) {
                 console.log('✅ Measurement added successfully');
                 this.showAlert('Measurement entry added successfully!', 'success');
-                
+
                 // Reset form
                 form.reset();
                 this.setDefaultDate();
                 this.updateUnitSystem(); // Reset unit system
-                
+
                 // Reload all measurements data
                 await this.loadAllMeasurements();
-                
+
                 // Always reload the current measurement type data
                 await this.loadMeasurementTypeData(measurementData.measurementType);
-                
+
                 // Update the select to show the measurement type
                 const select = document.getElementById('measurementTypeSelect');
                 if (select) {
@@ -498,69 +538,59 @@ class MeasurementsManager {
         }
     }
 
-    async editMeasurement(id) {
-        // Find the measurement
-        const measurement = this.measurements.find(m => m.id === id);
-        if (!measurement) {
-            this.showAlert('Measurement not found', 'danger');
+
+
+    // Handle inline editing
+    handleEditInline(row) {
+        // Hide all other edit forms if any are open
+        document.querySelectorAll('tr.editing').forEach(editingRow => {
+            if (editingRow !== row) {
+                this.handleCancelInline(editingRow);
+            }
+        });
+
+        // Show edit form
+        row.classList.add('editing');
+        row.querySelectorAll('.measurement-value').forEach(span => span.classList.add('d-none'));
+        row.querySelectorAll('.measurement-edit').forEach(input => input.classList.remove('d-none'));
+        row.querySelector('.edit-btn').classList.add('d-none');
+        row.querySelector('.save-btn').classList.remove('d-none');
+        row.querySelector('.cancel-btn').classList.remove('d-none');
+    }
+
+    // Handle saving inline edit
+    async handleSaveInline(row) {
+        const entryId = row.getAttribute('data-entry-id');
+
+        // Select inputs by their type for more reliability
+        const dateInput = row.querySelector('input[type="date"]');
+        const typeSelect = row.querySelector('select.measurement-edit');
+        const valueInput = row.querySelector('input[type="number"]');
+        const noteInput = row.querySelector('input[type="text"]');
+
+        const updatedEntry = {
+            date: dateInput.value,
+            measurementType: typeSelect.value,
+            value: parseFloat(valueInput.value),
+            unit: this.defaultUnit, // Keep the current unit system
+            note: noteInput.value
+        };
+
+        // Validate data
+        if (!updatedEntry.date || !updatedEntry.measurementType || !updatedEntry.value || updatedEntry.value <= 0) {
+            this.showAlert('Please enter valid date, type, and measurement values', 'danger');
             return;
         }
 
-        // Populate form with existing data
-        document.getElementById('measurementDate').value = measurement.date;
-        document.getElementById('measurementTypeInput').value = measurement.measurementType;
-        document.getElementById('measurementValue').value = measurement.value;
-        document.getElementById('measurementNote').value = measurement.note || '';
-
-        // Change form to edit mode
-        const form = document.getElementById('measurementForm');
-        const submitButton = form.querySelector('button[type="submit"]');
-        
-        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Update Entry';
-        submitButton.className = 'btn btn-warning';
-        
-        // Add cancel button
-        const cancelButton = document.createElement('button');
-        cancelButton.type = 'button';
-        cancelButton.className = 'btn btn-secondary ms-2';
-        cancelButton.innerHTML = '<i class="bi bi-x-circle"></i> Cancel';
-        cancelButton.onclick = () => this.cancelEdit();
-        
-        submitButton.parentNode.appendChild(cancelButton);
-        
-        // Store the ID for update
-        form.dataset.editId = id;
-        
-        // Update form handler
-        form.removeEventListener('submit', this.handleMeasurementSubmit);
-        form.addEventListener('submit', (e) => this.handleMeasurementUpdate(e));
-    }
-
-    async handleMeasurementUpdate(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const id = form.dataset.editId;
-        
-        const unitDisplay = document.getElementById('measurementUnitDisplay');
-        const measurementData = {
-            date: document.getElementById('measurementDate').value,
-            measurementType: document.getElementById('measurementTypeInput').value.trim(),
-            value: parseFloat(document.getElementById('measurementValue').value),
-            unit: unitDisplay ? unitDisplay.textContent : this.defaultUnit,
-            note: document.getElementById('measurementNote').value.trim()
-        };
-
         try {
-            const response = await API.measurements.update(id, measurementData);
-            
+            const response = await API.measurements.update(entryId, updatedEntry);
+
             if (response.ok) {
                 this.showAlert('Measurement entry updated successfully!', 'success');
-                this.cancelEdit();
-                
-                // Reload data
+
+                // Reload all measurements data
                 await this.loadAllMeasurements();
-                
+
                 // Reload current measurement type data
                 if (this.currentMeasurementType) {
                     await this.loadMeasurementTypeData(this.currentMeasurementType);
@@ -568,38 +598,23 @@ class MeasurementsManager {
             } else {
                 const errorData = await response.json();
                 this.showAlert(errorData.error || 'Failed to update measurement entry', 'danger');
+                this.handleCancelInline(row);
             }
         } catch (error) {
-            console.error('Error updating measurement:', error);
-            this.showAlert('Error updating measurement entry', 'danger');
+            console.error('Error updating measurement entry:', error);
+            this.showAlert('Error updating measurement entry. Please try again.', 'danger');
+            this.handleCancelInline(row);
         }
     }
 
-    cancelEdit() {
-        const form = document.getElementById('measurementForm');
-        const submitButton = form.querySelector('button[type="submit"]');
-        const cancelButton = form.querySelector('button[type="button"]');
-        
-        // Reset form
-        form.reset();
-        this.setDefaultDate();
-        this.updateUnitSystem(); // Reset unit system
-        
-        // Reset button
-        submitButton.innerHTML = '<i class="bi bi-plus-circle"></i> Add Entry';
-        submitButton.className = 'btn btn-primary';
-        
-        // Remove cancel button
-        if (cancelButton) {
-            cancelButton.remove();
-        }
-        
-        // Remove edit ID
-        delete form.dataset.editId;
-        
-        // Restore original handler
-        form.removeEventListener('submit', this.handleMeasurementUpdate);
-        form.addEventListener('submit', (e) => this.handleMeasurementSubmit(e));
+    // Handle canceling inline edit
+    handleCancelInline(row) {
+        row.classList.remove('editing');
+        row.querySelectorAll('.measurement-value').forEach(span => span.classList.remove('d-none'));
+        row.querySelectorAll('.measurement-edit').forEach(input => input.classList.add('d-none'));
+        row.querySelector('.edit-btn').classList.remove('d-none');
+        row.querySelector('.save-btn').classList.add('d-none');
+        row.querySelector('.cancel-btn').classList.add('d-none');
     }
 
     async deleteMeasurement(id) {
@@ -607,26 +622,59 @@ class MeasurementsManager {
             return;
         }
 
+        // Find the row being deleted for immediate feedback
+        const row = document.querySelector(`tr[data-entry-id="${id}"]`);
+        if (row) {
+            row.style.opacity = '0.5';
+            row.style.pointerEvents = 'none';
+        }
+
         try {
             const response = await API.measurements.delete(id);
-            
+
             if (response.ok) {
                 this.showAlert('Measurement entry deleted successfully!', 'success');
-                
-                // Reload data
-                await this.loadAllMeasurements();
-                
+
+                // Immediate UI update - remove the row
+                if (row) {
+                    row.remove();
+                }
+
+                // Update local data
+                this.measurements = this.measurements.filter(entry => entry.id !== id);
+
                 // Reload current measurement type data
                 if (this.currentMeasurementType) {
                     await this.loadMeasurementTypeData(this.currentMeasurementType);
                 }
+
+                // Show empty state if no entries left for current type
+                const currentTypeEntries = this.measurements.filter(entry => entry.measurementType === this.currentMeasurementType);
+                if (currentTypeEntries.length === 0) {
+                    const tableBody = document.querySelector('#measurementEntriesTable tbody');
+                    if (tableBody) {
+                        tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No ${this.currentMeasurementType.toLowerCase()} measurements yet. Add your first measurement below!</td></tr>`;
+                    }
+                }
             } else {
                 const errorData = await response.json();
                 this.showAlert(errorData.error || 'Failed to delete measurement entry', 'danger');
+
+                // Restore the row if delete failed
+                if (row) {
+                    row.style.opacity = '1';
+                    row.style.pointerEvents = 'auto';
+                }
             }
         } catch (error) {
             console.error('Error deleting measurement:', error);
             this.showAlert('Error deleting measurement entry', 'danger');
+
+            // Restore the row if delete failed
+            if (row) {
+                row.style.opacity = '1';
+                row.style.pointerEvents = 'auto';
+            }
         }
     }
 
@@ -644,12 +692,12 @@ class MeasurementsManager {
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
-        
+
         // Insert at the top of the measurements content
         const measurementsContent = document.querySelector('.measurements-content');
         if (measurementsContent) {
             measurementsContent.insertBefore(alertDiv, measurementsContent.firstChild);
-            
+
             // Auto-dismiss after 5 seconds
             setTimeout(() => {
                 if (alertDiv.parentNode) {

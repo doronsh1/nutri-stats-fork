@@ -250,17 +250,25 @@ class MeasurementsService {
             if (result.rows.length > 0) {
                 const stats = result.rows[0];
                 
-                // Get latest change
-                const latestChangeResult = await query(`
+                // Get latest change and overall change
+                const changeResult = await query(`
                     SELECT 
                         curr.value as current_value,
                         prev.value as previous_value,
-                        curr.date as current_date
+                        first_entry.value as first_value
                     FROM user_measurements curr
                     LEFT JOIN user_measurements prev ON (
                         prev.user_id = curr.user_id 
                         AND prev.measurement_type = curr.measurement_type
                         AND prev.date < curr.date
+                    )
+                    LEFT JOIN user_measurements first_entry ON (
+                        first_entry.user_id = curr.user_id 
+                        AND first_entry.measurement_type = curr.measurement_type
+                        AND first_entry.date = (
+                            SELECT MIN(date) FROM user_measurements 
+                            WHERE user_id = curr.user_id AND measurement_type = curr.measurement_type
+                        )
                     )
                     WHERE curr.user_id = ? AND curr.measurement_type = ?
                     ORDER BY curr.date DESC, prev.date DESC
@@ -268,10 +276,19 @@ class MeasurementsService {
                 `, [userId, measurementType]);
 
                 let latestChange = 0;
-                if (latestChangeResult.rows.length > 0) {
-                    const latest = latestChangeResult.rows[0];
-                    if (latest.previous_value) {
-                        latestChange = latest.current_value - latest.previous_value;
+                let overallChange = 0;
+                
+                if (changeResult.rows.length > 0) {
+                    const result = changeResult.rows[0];
+                    
+                    // Calculate latest change (current - previous)
+                    if (result.previous_value) {
+                        latestChange = result.current_value - result.previous_value;
+                    }
+                    
+                    // Calculate overall change (current - first)
+                    if (result.first_value) {
+                        overallChange = result.current_value - result.first_value;
                     }
                 }
 
@@ -283,7 +300,7 @@ class MeasurementsService {
                     firstEntryDate: stats.first_entry_date,
                     lastEntryDate: stats.last_entry_date,
                     latestChange: parseFloat(latestChange.toFixed(2)),
-                    overallChange: stats.max_value - stats.min_value
+                    overallChange: parseFloat(overallChange.toFixed(2))
                 };
             }
 

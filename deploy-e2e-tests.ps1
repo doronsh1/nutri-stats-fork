@@ -32,27 +32,23 @@ try {
 Write-Host "Pushing e2e-tests folder to remote repository..." -ForegroundColor Yellow
 
 try {
-    git subtree push --prefix=e2e-tests e2e-repo main
-    Write-Host "Successfully deployed e2e-tests folder to nutri-stats-e2e-playwright repository!" -ForegroundColor Green
-} catch {
-    Write-Host "Standard subtree push failed, trying force push method..." -ForegroundColor Yellow
-    try {
-        # Split the subtree and get the commit hash
-        $commitHash = git subtree split --prefix=e2e-tests HEAD
-        if ($commitHash) {
-            git push e2e-repo "${commitHash}:main" --force
-            Write-Host "Successfully force-deployed e2e-tests folder to nutri-stats-e2e-playwright repository!" -ForegroundColor Green
-        } else {
-            throw "Failed to split subtree"
-        }
-    } catch {
-        Write-Host "Error: Failed to push e2e-tests folder." -ForegroundColor Red
-        Write-Host "This might be because:" -ForegroundColor Yellow
-        Write-Host "1. The remote repository doesn't exist or you don't have access" -ForegroundColor Yellow
-        Write-Host "2. You need to authenticate with GitHub" -ForegroundColor Yellow
-        Read-Host "Press Enter to continue..."
-        exit 1
+    # Split the subtree and get the commit hash
+    Write-Host "Splitting e2e-tests subtree..." -ForegroundColor Yellow
+    $commitHash = git subtree split --prefix=e2e-tests HEAD
+    if ($commitHash) {
+        Write-Host "Pushing to remote repository..." -ForegroundColor Yellow
+        git push e2e-repo "${commitHash}:main" --force
+        Write-Host "Successfully deployed e2e-tests folder to nutri-stats-e2e-playwright repository!" -ForegroundColor Green
+    } else {
+        throw "Failed to split subtree"
     }
+} catch {
+    Write-Host "Error: Failed to push e2e-tests folder." -ForegroundColor Red
+    Write-Host "This might be because:" -ForegroundColor Yellow
+    Write-Host "1. The remote repository doesn't exist or you don't have access" -ForegroundColor Yellow
+    Write-Host "2. You need to authenticate with GitHub" -ForegroundColor Yellow
+    Read-Host "Press Enter to continue..."
+    exit 1
 }
 
 Read-Host "Press Enter to continue..."
