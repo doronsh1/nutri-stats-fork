@@ -274,37 +274,29 @@ Stats/
 - **Safe Deployment** - Zero-data-loss production deployments
 - **Automated Backups** - Database protection during updates
 
-## API Endpoints
+## 📡 API Documentation
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout (protected)
-- `GET /api/auth/profile` - Get current user profile (protected)
-- `PUT /api/auth/profile` - Update user profile (protected)
-- `GET /api/auth/verify` - Verify JWT token validity
-- `POST /api/auth/refresh` - Refresh access token
-- `PUT /api/auth/change-password` - Change user password (protected)
+For complete API documentation including request/response examples, authentication details, and endpoint specifications, see:
 
-### Foods
-- `GET /api/foods` - Retrieve all foods for user
-- `POST /api/foods` - Add new food item
-- `PUT /api/foods/:id` - Update food item
-- `DELETE /api/foods/:id` - Delete food item
+**[📖 Complete API Documentation](API.md)**
 
-### Meals
-- `GET /api/daily-meals/:day` - Get meals for specific day
-- `POST /api/daily-meals/:day` - Save meals for specific day
+### Quick API Overview
 
-### Settings
-- `GET /api/settings` - Get user settings
-- `POST /api/settings` - Update user settings
+The NutriStats API provides RESTful endpoints for:
 
-### Weight Tracking
-- `GET /api/weight` - Get all weight entries for user
-- `POST /api/weight` - Add new weight entry
-- `PUT /api/weight/:id` - Update weight entry
-- `DELETE /api/weight/:id` - Delete weight entry
+- **Authentication** - JWT-based user authentication and profile management
+- **Foods Management** - CRUD operations for food database
+- **Daily Meals** - Meal tracking and macro management
+- **Weight Tracking** - Weight entry management and analytics
+- **Body Measurements** - Body measurement tracking (waist, thigh, arm)
+- **User Settings** - Personal preferences and configuration
+
+**Base URL:** `http://localhost:8080/api`
+
+**Authentication:** Most endpoints require JWT token in Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
 
 ## 🚀 Deployment
 
