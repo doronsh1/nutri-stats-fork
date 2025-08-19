@@ -9,7 +9,31 @@
 
 A comprehensive web-based nutrition tracking and analytics platform specifically designed for professional athletes and sports nutrition professionals. This application provides advanced meal planning, macro tracking, weight management, and performance analytics to optimize athletic nutrition strategies.
 
-> **Related Project:** [NutriStats-FrontEnd Automation](https://github.com/yourusername/NutriStats-FrontEnd-Automation) - Comprehensive E2E testing suite for this application.
+## Table of Contents
+
+- [Overview](#overview)
+- [Core Features](#core-features)
+- [Installation](#installation)
+- [Live Demo](#live-demo)
+- [Security Configuration](#security-configuration)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Technology Stack](#technology-stack)
+- [API Documentation](#api-documentation)
+- [Deployment](#deployment)
+- [Database Management](#database-management)
+- [Professional Applications](#professional-applications)
+- [Key Metrics & Analytics](#key-metrics--analytics)
+- [Target Users](#target-users)
+- [Documentation](#documentation)
+- [Related Projects](#related-projects)
+- [License](#license)
+- [Contact](#contact)
+
+## 🔗 Related Projects
+
+- **[NutriStats Performance Tests (K6)](https://github.com/TomerTTB/nutri-stats-performance-k6)** - Performance testing suite with K6 for load testing, stress testing, and API validation
+- **[NutriStats-FrontEnd Automation](https://github.com/yourusername/NutriStats-FrontEnd-Automation)** - Comprehensive E2E testing suite with Playwright automation framework
 
 ## 🎯 Overview
 
