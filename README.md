@@ -9,9 +9,17 @@
 
 A comprehensive web-based nutrition tracking and analytics platform specifically designed for professional athletes and sports nutrition professionals. This application provides advanced meal planning, macro tracking, weight management, and performance analytics to optimize athletic nutrition strategies.
 
+## 🔗 Related Projects
+
+- **[NutriStats-FrontEnd Automation](https://github.com/yourusername/NutriStats-FrontEnd-Automation)** - Comprehensive E2E testing suite with Playwright automation framework
+- **[NutriStats Performance Tests (K6)](https://github.com/TomerTTB/nutri-stats-performance-k6)** - Performance testing suite with K6 for load testing, stress testing, and API ting, and API validation
+
+## 🎯 Overview
+
+NutriStats is engineered to meet the demanding nutritional requirements of professional athletes, providing precise macro tracking, performance-oriented meal planning, and comprehensive analytics. Built with vanilla JavaScript and modern web technologies, it offers a robust, scalable solution for sports nutrition management.
+
 ## Table of Contents
 
-- [Overview](#overview)
 - [Core Features](#core-features)
 - [Installation](#installation)
 - [Live Demo](#live-demo)
@@ -29,15 +37,6 @@ A comprehensive web-based nutrition tracking and analytics platform specifically
 - [Related Projects](#related-projects)
 - [License](#license)
 - [Contact](#contact)
-
-## 🔗 Related Projects
-
-- **[NutriStats Performance Tests (K6)](https://github.com/TomerTTB/nutri-stats-performance-k6)** - Performance testing suite with K6 for load testing, stress testing, and API validation
-- **[NutriStats-FrontEnd Automation](https://github.com/yourusername/NutriStats-FrontEnd-Automation)** - Comprehensive E2E testing suite with Playwright automation framework
-
-## 🎯 Overview
-
-NutriStats is engineered to meet the demanding nutritional requirements of professional athletes, providing precise macro tracking, performance-oriented meal planning, and comprehensive analytics. Built with vanilla JavaScript and modern web technologies, it offers a robust, scalable solution for sports nutrition management.
 
 ## ✨ Core Features
 
