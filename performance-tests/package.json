@@ -1,0 +1,18 @@
+{
+  "name": "nutristats-performance-tests",
+  "version": "1.0.0",
+  "description": "K6 Performance Tests for NutriStats API",
+  "scripts": {
+    "test": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 basic",
+    "test:load": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 load",
+    "test:auth": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 auth",
+    "test:foods": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 foods",
+    "test:stress": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 stress",
+    "test:spike": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 spike",
+    "test:custom": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 custom",
+    "help": "powershell -ExecutionPolicy Bypass -File run-k6.ps1 -Help",
+    "install-k6": "echo 'Please install K6 from https://k6.io/docs/get-started/installation/'"
+  },
+  "devDependencies": {},
+  "keywords": ["k6", "performance", "testing", "api", "load-testing"]
+}
