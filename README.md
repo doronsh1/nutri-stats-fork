@@ -12,7 +12,7 @@ A comprehensive web-based nutrition tracking and analytics platform specifically
 ## 🔗 Related Projects
 
 - **[NutriStats-FrontEnd Automation](https://github.com/yourusername/NutriStats-FrontEnd-Automation)** - Comprehensive E2E testing suite with Playwright automation framework
-- **[NutriStats Performance Tests (K6)](https://github.com/TomerTTB/nutri-stats-performance-k6)** - Performance testing suite with K6 for load testing, stress testing, and API ting, and API validation
+- **[NutriStats Performance Tests (K6)](https://github.com/TomerTTB/nutri-stats-performance-k6)** - Performance testing suite with K6 for API validation
 
 ## 🎯 Overview
 
