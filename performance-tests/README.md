@@ -7,9 +7,16 @@
 
 Professional performance testing suite for the NutriStats API using K6, designed for comprehensive load testing, stress testing, and performance validation of nutrition tracking endpoints.
 
+## 🔗 Related Projects
+
+- **[NutriStats Main Application](https://github.com/TomerTTB/Stats)** - The main NutriStats nutrition tracking platform that these tests validate
+
+## 🎯 Overview
+
+NutriStats Performance Tests provide comprehensive performance validation for the NutriStats API using K6. This suite focuses on **performance over functionality**, emphasizing response times, throughput, error rates, and system behavior under various load conditions.
+
 ## Table of Contents
 
-- [Overview](#overview)
 - [Core Features](#core-features)
 - [Installation](#installation)
 - [Test Types](#test-types)
@@ -23,14 +30,6 @@ Professional performance testing suite for the NutriStats API using K6, designed
 - [Best Practices](#best-practices)
 - [Troubleshooting](#troubleshooting)
 - [Related Projects](#related-projects)
-
-## 🔗 Related Projects
-
-- **[NutriStats Main Application](https://github.com/TomerTTB/Stats)** - The main NutriStats nutrition tracking platform that these tests validate
-
-## 🎯 Overview
-
-NutriStats Performance Tests provide comprehensive performance validation for the NutriStats API using K6. This suite focuses on **performance over functionality**, emphasizing response times, throughput, error rates, and system behavior under various load conditions.
 
 ## ✨ Core Features
 
