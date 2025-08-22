@@ -3,7 +3,42 @@ import http from 'k6/http';
 import { config, sampleFoods } from '../config/test-config.js';
 import { setupAuth, getAuthHeaders } from '../utils/auth-helper.js';
 
-// Comprehensive API Smoke Test - Happy path validation for all NutriStats endpoints
+/**
+ * Comprehensive API Smoke Test
+ * 
+ * PURPOSE:
+ * This test provides comprehensive validation of all NutriStats API endpoints to ensure
+ * basic functionality and system health. It serves as a foundational test to verify
+ * that all core features are working correctly before running more intensive load tests.
+ * 
+ * WHAT IT TESTS:
+ * - All API endpoints for basic functionality (happy path)
+ * - Authentication system including login, verification, and profile management
+ * - Food database operations (search, create, update, delete)
+ * - Daily meal management and macro tracking
+ * - Weight tracking and body measurements
+ * - User settings and preferences
+ * - System health and version endpoints
+ * 
+ * REALISTIC SCENARIOS:
+ * - New user registration and first-time system exploration
+ * - Basic daily nutrition tracking workflow validation
+ * - System health check before major competitions
+ * - API functionality verification after system updates
+ * - Integration testing for all core features
+ * 
+ * LOAD PATTERN:
+ * - Light load: 10 users for 40 seconds
+ * - Focuses on functionality rather than performance
+ * - Validates system stability under normal conditions
+ * 
+ * SUCCESS CRITERIA:
+ * - <5% failure rate across all endpoints
+ * - <2s response time for 95% of operations
+ * - All CRUD operations successful
+ * - Authentication flow working correctly
+ * - Data integrity maintained throughout test
+ */
 export const options = {
     cloud: {
         projectID: __ENV.PROJECT_ID,

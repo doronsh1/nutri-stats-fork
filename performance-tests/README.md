@@ -79,12 +79,12 @@ K6 performance testing suite for the NutriStats API focusing on response times, 
 | Test | Purpose | Load | Thresholds |
 |------|---------|------|------------|
 | **smoke** | API validation | 10 users, 40s | 95% < 2s, <5% failures |
-| **load** | Normal traffic | 5-10 users, 75s | 95% < 800ms, <2% failures |
-| **auth** | Authentication | 5-25 users, 70s | 95% < 500ms, <1% failures |
-| **foods** | Foods API CRUD | 10-30 users, 105s | 95% < 600ms, <2% failures |
-| **stress** | System limits | 10-100 users, 12m | 95% < 1s, <5% failures |
-| **spike** | Traffic spikes | Spikes to 150 users | 95% < 2s, <10% failures |
-| **custom** | Flexible patterns | User-defined | 95% < 1s, <3% failures |
+| **login** | User login flow | 10-20 users, 3m | 95% < 1s, <2% failures |
+| **user-journey** | Complete athlete workflow | 20 users, 5.5m | 95% < 1.5s, <3% failures |
+| **food-database** | Heavy food operations | 30-100 users, 4m | 95% < 600ms, <2% failures |
+| **meal-planning-spike** | Peak usage spikes | Spikes to 200 users | 95% < 2s, <10% failures |
+| **analytics-reporting** | Data-heavy operations | 25-75 users, 4.75m | 95% < 2s, <5% failures |
+| **concurrent-data-entry** | Multi-user data entry | 40-80 users, 4m | 95% < 1s, <3% failures |
 
 ## 🚀 Running Tests
 
@@ -93,8 +93,12 @@ K6 performance testing suite for the NutriStats API focusing on response times, 
 ```powershell
 # Basic test execution
 .\run-k6.ps1 smoke
-.\run-k6.ps1 load
-.\run-k6.ps1 stress
+.\run-k6.ps1 login
+.\run-k6.ps1 user-journey
+.\run-k6.ps1 food-database
+.\run-k6.ps1 meal-planning-spike
+.\run-k6.ps1 analytics-reporting
+.\run-k6.ps1 concurrent-data-entry
 
 # Custom environment
 .\run-k6.ps1 smoke -BaseUrl "http://staging.nutristats.com"
@@ -122,9 +126,13 @@ K6 performance testing suite for the NutriStats API focusing on response times, 
 
 ```bash
 # NPM scripts
-npm run test:smoke     # Smoke test
-npm run test:load      # Load test
-npm run test:stress    # Stress test
+npm run test:smoke                 # Smoke test
+npm run test:login                 # Login flow test
+npm run test:user-journey          # Complete user journey test
+npm run test:food-database         # Food database load test
+npm run test:meal-planning-spike   # Meal planning spike test
+npm run test:analytics-reporting   # Analytics reporting stress test
+npm run test:concurrent-data-entry # Concurrent data entry test
 
 # Direct K6
 k6 run tests/smoke-test.js

@@ -1,6 +1,6 @@
 param(
     [Parameter(Position=0)]
-    [ValidateSet("smoke")]
+    [ValidateSet("smoke", "login", "user-journey", "food-database", "meal-planning-spike", "analytics-reporting", "concurrent-data-entry")]
     [string]$TestType = "smoke",
     
     [string]$BaseUrl = "http://localhost:8080",
@@ -20,13 +20,13 @@ if ($Help) {
     Write-Host "Usage: .\run-k6.ps1 [TestType] [Options]"
     Write-Host ""
     Write-Host "Test Types:"
-    Write-Host "  smoke   - Happy path validation for all API endpoints"
-    Write-Host "  load    - API health check with light load"
-    Write-Host "  auth    - Authentication performance test"
-    Write-Host "  foods   - Foods API performance test"
-    Write-Host "  stress  - Gradual load increase stress test"
-    Write-Host "  spike   - Sudden load spike test"
-    Write-Host "  custom  - Custom test with stages parameter"
+    Write-Host "  smoke                 - Happy path validation for all API endpoints"
+    Write-Host "  login                 - Realistic user login flow simulation"
+    Write-Host "  user-journey          - Complete athlete daily nutrition workflow"
+    Write-Host "  food-database         - Heavy food search and CRUD operations"
+    Write-Host "  meal-planning-spike   - Peak usage spikes during meal planning"
+    Write-Host "  analytics-reporting   - Data-heavy analytics and reporting operations"
+    Write-Host "  concurrent-data-entry - Multi-user concurrent data entry testing"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -BaseUrl        API base URL (default: http://localhost:8080)"
@@ -47,6 +47,12 @@ if ($Help) {
 # Map test types to files
 $testFiles = @{
     "smoke" = "tests/smoke-test.js"
+    "login" = "tests/login-test.js"
+    "user-journey" = "tests/user-journey-test.js"
+    "food-database" = "tests/food-database-load-test.js"
+    "meal-planning-spike" = "tests/meal-planning-spike-test.js"
+    "analytics-reporting" = "tests/analytics-reporting-stress-test.js"
+    "concurrent-data-entry" = "tests/concurrent-data-entry-test.js"
 }
 
 $testFile = $testFiles[$TestType]
