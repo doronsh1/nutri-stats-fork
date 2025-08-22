@@ -88,6 +88,50 @@ K6 performance testing suite for the NutriStats API focusing on response times, 
 | **analytics-reporting** | Data-heavy operations | 25-75 users, 4.75m | 95% < 2s, <5% failures |
 | **concurrent-data-entry** | Multi-user data entry | 40-80 users, 4m | 95% < 1s, <3% failures |
 
+### 📋 Detailed Test Descriptions
+
+#### **Smoke Test** (`smoke-test.js`)
+**Purpose**: Basic API validation and system health check  
+**What it tests**: Core API endpoints, authentication flow, basic CRUD operations  
+**Scenarios**: Quick system validation before deployments, CI/CD pipeline integration  
+**Load**: Light load (10 users) for 40 seconds to verify system functionality
+
+#### **Login Test** (`login-test.js`)
+**Purpose**: Authentication system performance and user login experience  
+**What it tests**: Landing page access, user authentication, post-login dashboard loading, session management  
+**Scenarios**: Athletes logging in before training, coaches accessing during meetings, mobile/web login comparison  
+**Load**: Gradual ramp from 10 to 20 users over 3 minutes simulating daily login patterns
+
+#### **User Journey Test** (`user-journey-test.js`)
+**Purpose**: Complete end-to-end athlete workflow simulation  
+**What it tests**: Full user experience from login to meal planning, analytics review, and data management  
+**Scenarios**: Professional athlete's daily nutrition tracking, weekly meal planning, progress monitoring  
+**Load**: 20 concurrent users over 5.5 minutes representing typical daily usage patterns
+
+#### **Food Database Load Test** (`food-database-load-test.js`)
+**Purpose**: Food database system performance under heavy search and CRUD operations  
+**What it tests**: Food search performance, database operations, bulk imports, concurrent access  
+**Scenarios**: Sports nutritionist importing supplements, meal planning searches, team food management  
+**Load**: Ramp from 30 to 100 users over 4 minutes with intensive database operations
+
+#### **Meal Planning Spike Test** (`meal-planning-spike-test.js`)
+**Purpose**: System behavior during peak usage periods (morning/evening meal planning)  
+**What it tests**: Sudden load spikes, peak hour operations, system recovery, data integrity under stress  
+**Scenarios**: Morning nutrition planning rush, evening meal prep, training schedule changes  
+**Load**: Spike pattern reaching 200 users simulating real-world peak usage times
+
+#### **Analytics Reporting Stress Test** (`analytics-reporting-stress-test.js`)
+**Purpose**: Data-heavy analytics and reporting operations under sustained load  
+**What it tests**: Complex data aggregation, multi-day analytics, trend analysis, concurrent report generation  
+**Scenarios**: Sports science team reports, coach reviews, athlete progress analysis, team performance correlation  
+**Load**: Sustained load from 25 to 75 users over 4.75 minutes with intensive data processing
+
+#### **Concurrent Data Entry Test** (`concurrent-data-entry-test.js`)
+**Purpose**: Multi-user simultaneous data entry and database concurrency validation  
+**What it tests**: Database concurrency, data integrity, transaction management, concurrent write operations  
+**Scenarios**: Team weigh-ins, multiple athletes logging simultaneously, nutrition professionals managing clients  
+**Load**: Ramp from 40 to 80 users over 4 minutes with heavy concurrent write operations
+
 ## 🚀 Running Tests
 
 ### PowerShell Script (Recommended)
