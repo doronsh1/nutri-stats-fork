@@ -9,14 +9,16 @@ Professional performance testing suite for the NutriStats API using K6, designed
 
 ## Table of Contents
 
-- [Overview](#overview)
+- [Overview](#-overview)
 - [Installation](#installation)
-- [Test Types](#test-types)
-- [Running Tests](#running-tests)
-- [Grafana Integration](#grafana-integration)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [Related Projects](#related-projects)
+- [Test Types](#-test-types)
+- [Running Tests](#-running-tests)
+- [Grafana Integration](#-grafana-integration)
+- [Configuration](#️-configuration)
+- [Key Metrics](#-key-metrics)
+- [Load Patterns](#-load-patterns)
+- [Troubleshooting](#-troubleshooting)
+- [Related Projects](#-related-projects)
 
 ## 🔗 Related Projects
 
