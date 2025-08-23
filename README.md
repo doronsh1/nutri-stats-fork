@@ -56,6 +56,14 @@ NutriStats is engineered to meet the demanding nutritional requirements of profe
 - **Trend Analysis** - Weekly and monthly nutrition patterns
 - **Export Capabilities** - Data export for sports science teams
 
+### 📄 Professional PDF Report Generation
+- **Individual Reports** - Generate detailed PDF reports for nutrition, weight tracking, and body measurements
+- **Complete Health Reports** - Comprehensive multi-page PDF combining all tracking data
+- **Visual Charts & Analytics** - High-quality charts and graphs included in PDF exports
+- **Professional Formatting** - Clean, presentation-ready reports for athletes and coaches
+- **Data Tables** - Detailed breakdowns of daily entries, macro targets, and progress metrics
+- **Instant Download** - Generate and download reports directly from any section
+
 ### ⚖️ Precision Weight Management
 - **Daily Weight Tracking** - Monitor weight fluctuations and trends
 - **Body Composition Analysis** - Track changes over training cycles
