@@ -20,23 +20,23 @@ NutriStats is engineered to meet the demanding nutritional requirements of profe
 
 ## Table of Contents
 
-- [✨ Core Features](#-core-features)
+- [Core Features](#-core-features)
 - [Installation](#installation)
-- [🌐 Live Demo](#-live-demo)
+- [Live Demo](#-live-demo)
 - [Security Configuration](#security-configuration)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
-- [🛠️ Technology Stack](#️-technology-stack)
-- [📡 API Documentation](#-api-documentation)
-- [🚀 Deployment](#-deployment)
-- [🗄️ Database Management](#️-database-management)
-- [🚀 Professional Applications](#-professional-applications)
-- [📈 Key Metrics & Analytics](#-key-metrics--analytics)
-- [🎯 Target Users](#-target-users)
-- [📚 Documentation](#-documentation)
-- [🔗 Related Projects](#-related-projects)
-- [📄 License](#-license)
-- [📞 Contact](#-contact)
+- [Technology Stack](#️-technology-stack)
+- [API Documentation](#-api-documentation)
+- [Deployment](#-deployment)
+- [Database Management](#️-database-management)
+- [Professional Applications](#-professional-applications)
+- [Key Metrics & Analytics](#-key-metrics--analytics)
+- [Target Users](#-target-users)
+- [Documentation](#-documentation)
+- [Related Projects](#-related-projects)
+- [License](#-license)
+- [Contact](#-contact)
 
 ## ✨ Core Features
 
