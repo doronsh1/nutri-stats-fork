@@ -129,8 +129,10 @@ class MeasurementsManager {
 
     async loadMeasurementStats(measurementType) {
         try {
+            console.log('Loading measurement stats for type:', measurementType);
             const response = await API.measurements.getStats(measurementType);
             const data = await response.json();
+            console.log('Received measurement stats:', data);
             return data;
         } catch (error) {
             console.error('Error loading measurement stats:', error);
@@ -194,6 +196,8 @@ class MeasurementsManager {
     // All measurement data is always visible now - no need to show/hide
 
     updateMeasurementStats(stats, measurementType) {
+        console.log('Updating measurement stats UI for type:', measurementType, 'with stats:', stats);
+        
         const currentElement = document.getElementById('currentMeasurement');
         const latestChangeElement = document.getElementById('latestMeasurementChange');
         const overallChangeElement = document.getElementById('measurementChange');
@@ -224,10 +228,10 @@ class MeasurementsManager {
         }
 
         if (latestChangeElement) {
-            if (stats.latestChange !== 0) {
+            if (stats.totalEntries >= 2 && stats.latestChange !== undefined && stats.latestChange !== null) {
                 const changeText = stats.latestChange > 0 ? `+${stats.latestChange}` : `${stats.latestChange}`;
                 latestChangeElement.textContent = `${changeText} ${unit}`;
-                latestChangeElement.className = `stat-value ${stats.latestChange > 0 ? 'text-success' : 'text-danger'}`;
+                latestChangeElement.className = `stat-value ${stats.latestChange > 0 ? 'text-success' : stats.latestChange < 0 ? 'text-danger' : ''}`;
             } else {
                 latestChangeElement.textContent = '-';
                 latestChangeElement.className = 'stat-value';
@@ -235,10 +239,10 @@ class MeasurementsManager {
         }
 
         if (overallChangeElement) {
-            if (stats.overallChange !== 0) {
+            if (stats.totalEntries >= 2 && stats.overallChange !== undefined && stats.overallChange !== null) {
                 const changeText = stats.overallChange > 0 ? `+${stats.overallChange}` : `${stats.overallChange}`;
                 overallChangeElement.textContent = `${changeText} ${unit}`;
-                overallChangeElement.className = `stat-value ${stats.overallChange > 0 ? 'text-success' : 'text-danger'}`;
+                overallChangeElement.className = `stat-value ${stats.overallChange > 0 ? 'text-success' : stats.overallChange < 0 ? 'text-danger' : ''}`;
             } else {
                 overallChangeElement.textContent = '-';
                 overallChangeElement.className = 'stat-value';
@@ -246,10 +250,10 @@ class MeasurementsManager {
         }
 
         if (avgElement) {
-            if (stats.avgChange !== 0 && stats.totalEntries > 1) {
+            if (stats.totalEntries > 1 && stats.avgChange !== undefined && stats.avgChange !== null) {
                 const changeText = stats.avgChange > 0 ? `+${stats.avgChange}` : `${stats.avgChange}`;
-                avgElement.textContent = `${changeText} ${unit}`;
-                avgElement.className = `stat-value ${stats.avgChange > 0 ? 'text-success' : 'text-danger'}`;
+                avgElement.textContent = `${changeText} ${unit}/week`;
+                avgElement.className = `stat-value ${stats.avgChange > 0 ? 'text-success' : stats.avgChange < 0 ? 'text-danger' : ''}`;
             } else {
                 avgElement.textContent = '-';
                 avgElement.className = 'stat-value';
@@ -691,6 +695,91 @@ class MeasurementsManager {
         console.log('Measurements: Settings refreshed');
     }
 
+    // Method to get all recent measurements for PDF generation
+    async getAllRecentMeasurements(limit = 15) {
+        try {
+            // Ensure we have all measurements loaded
+            await this.loadAllMeasurements();
+            
+            // Sort all measurements by date (newest first) and limit
+            const sortedMeasurements = [...this.measurements]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, limit);
+            
+            return sortedMeasurements.map(measurement => ({
+                date: measurement.date,
+                type: measurement.measurementType,
+                value: measurement.value,
+                unit: measurement.unit
+            }));
+        } catch (error) {
+            console.error('Error getting all recent measurements:', error);
+            return [];
+        }
+    }
+
+    // Method to populate recent entries table with all measurement types
+    async populateRecentEntriesTable() {
+        try {
+            // Get all measurements sorted by date
+            const allMeasurements = await this.getAllRecentMeasurements(50);
+            
+            const tableBody = document.querySelector('#measurementEntriesTable tbody');
+            if (!tableBody) return;
+
+            // Clear existing rows
+            tableBody.innerHTML = '';
+
+            if (allMeasurements.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No measurements yet. Add your first measurement below!</td></tr>';
+                return;
+            }
+
+            // Calculate changes for each measurement type separately
+            const measurementsByType = {};
+            allMeasurements.forEach(measurement => {
+                if (!measurementsByType[measurement.type]) {
+                    measurementsByType[measurement.type] = [];
+                }
+                measurementsByType[measurement.type].push(measurement);
+            });
+
+            // Calculate changes within each type
+            Object.keys(measurementsByType).forEach(type => {
+                const typeEntries = measurementsByType[type].sort((a, b) => new Date(b.date) - new Date(a.date));
+                for (let i = 0; i < typeEntries.length; i++) {
+                    const current = typeEntries[i];
+                    const previous = typeEntries[i + 1];
+                    current.change = previous ? current.value - previous.value : 0;
+                }
+            });
+
+            // Populate table
+            allMeasurements.forEach(entry => {
+                const row = document.createElement('tr');
+                
+                const changeText = entry.change !== 0 ?
+                    (entry.change > 0 ? `+${entry.change.toFixed(1)}` : `${entry.change.toFixed(1)}`) :
+                    '-';
+                const changeClass = entry.change > 0 ? 'text-success' : entry.change < 0 ? 'text-danger' : '';
+
+                row.innerHTML = `
+                    <td>${new Date(entry.date).toLocaleDateString()}</td>
+                    <td>${entry.type}</td>
+                    <td>${entry.value} ${entry.unit}</td>
+                    <td>${entry.unit}</td>
+                    <td class="${changeClass}">${changeText}</td>
+                    <td>-</td>
+                    <td>-</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error populating recent entries table:', error);
+        }
+    }
+
     showAlert(message, type = 'info') {
         // Create alert element
         const alertDiv = document.createElement('div');
@@ -715,5 +804,5 @@ class MeasurementsManager {
     }
 }
 
-// Create global instance
-const measurementsManager = new MeasurementsManager();
+// Export class to global scope (instance will be created by reports-main.js)
+window.MeasurementsManager = MeasurementsManager;

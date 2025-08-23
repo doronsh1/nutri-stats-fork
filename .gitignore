@@ -7,7 +7,6 @@ yarn-error.log*
 # folder
 kiro/
 e2e-tests/
-performance-tests/
 
 # Runtime data
 pids

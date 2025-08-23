@@ -12,11 +12,48 @@
     <link rel="stylesheet" href="/css/components/footer.css">
     <link rel="stylesheet" href="/css/pages/reports.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Custom Tab System */
         .custom-tabs {
             border-bottom: 1px solid #dee2e6;
             margin-bottom: 2rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .download-section {
+            margin-left: auto;
+        }
+
+        .dropdown-item i {
+            margin-right: 8px;
+            width: 16px;
+        }
+
+        .btn-primary {
+            background-color: #1a73e8;
+            border-color: #1a73e8;
+        }
+
+        .btn-primary:hover {
+            background-color: #1557b0;
+            border-color: #1557b0;
+        }
+
+        /* PDF generation loading state */
+        .generating-pdf {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .generating-pdf::after {
+            content: " (Generating...)";
+            font-style: italic;
         }
 
         .custom-tab-button {
@@ -87,16 +124,40 @@
     <div class="main-section">
         <div class="container mt-3">
             <!-- Custom Tab Navigation -->
-            <div class="custom-tabs">
-                <button class="custom-tab-button active" id="nutrition-tab" data-target="nutrition-section">
-                    <i class="bi bi-bar-chart-fill"></i> Nutrition Report
-                </button>
-                <button class="custom-tab-button" id="weight-tab" data-target="weight-section">
-                    <i class="bi bi-speedometer2"></i> Weight Tracking
-                </button>
-                <button class="custom-tab-button" id="measurements-tab" data-target="measurements-section">
-                    <i class="bi bi-rulers"></i> Measurements
-                </button>
+            <div class="custom-tabs d-flex justify-content-between align-items-center">
+                <div class="tab-buttons">
+                    <button class="custom-tab-button active" id="nutrition-tab" data-target="nutrition-section">
+                        <i class="bi bi-bar-chart-fill"></i> Nutrition Report
+                    </button>
+                    <button class="custom-tab-button" id="weight-tab" data-target="weight-section">
+                        <i class="bi bi-speedometer2"></i> Weight Tracking
+                    </button>
+                    <button class="custom-tab-button" id="measurements-tab" data-target="measurements-section">
+                        <i class="bi bi-rulers"></i> Measurements
+                    </button>
+                </div>
+                <div class="download-section">
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-download"></i> Download Report
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                            <li><a class="dropdown-item" href="#" id="download-nutrition-pdf">
+                                <i class="bi bi-file-earmark-pdf"></i> Nutrition Report PDF
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" id="download-weight-pdf">
+                                <i class="bi bi-file-earmark-pdf"></i> Weight Report PDF
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" id="download-measurements-pdf">
+                                <i class="bi bi-file-earmark-pdf"></i> Measurements Report PDF
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="download-complete-pdf">
+                                <i class="bi bi-file-earmark-pdf-fill"></i> Complete Report PDF
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <!-- Report Sections -->
@@ -136,6 +197,14 @@
                                             <div class="stat-item">
                                                 <span class="label">Protein Target:</span>
                                                 <span class="value" id="proteinAchievement">-</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="label">Fat Target:</span>
+                                                <span class="value" id="fatAchievement">-</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="label">Carbs Target:</span>
+                                                <span class="value" id="carbsAchievement">-</span>
                                             </div>
                                             <div class="stat-item">
                                                 <span class="label">Days On Track:</span>
@@ -492,7 +561,16 @@
     <script src="/js/utils/apiUtils.js"></script>
     <script src="/js/components/navbar.js"></script>
     <script src="/js/components/footer.js"></script>
+    
+    <!-- Load report modules in correct order -->
+    <script src="/js/modules/report-utils.js"></script>
+    <script src="/js/modules/nutrition-reports.js"></script>
+    <script src="/js/modules/weight-tracker.js"></script>
+    <script src="/js/modules/pdf-generator.js"></script>
+    <script src="/js/modules/reports-app.js"></script>
+    <script src="/js/pages/reports-main.js"></script>
     <script src="/js/pages/reports.js"></script>
+    
     <script src="/js/pages/measurements.js"></script>
     <script>
         // Initialize authentication check
@@ -506,11 +584,8 @@
                 measurementDateInput.value = today;
             }
 
-            // Initialize measurements manager immediately
-            if (typeof measurementsManager !== 'undefined') {
-                console.log('🔧 Initializing measurements manager from DOM ready');
-                measurementsManager.init();
-            }
+            // Measurements manager will be initialized by the ReportsApp
+            // No need to initialize it here as it's handled by the modular system
         });
     </script>
 </body>

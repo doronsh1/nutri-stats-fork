@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Measurements PDF</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <h1>Test Measurements PDF Generation</h1>
+    <button id="test-btn">Test PDF Generation</button>
+    
+    <div id="measurements-section" style="display: none;">
+        <div id="currentMeasurement">75.5 cm</div>
+        <div id="latestMeasurementChange">-1.2 cm</div>
+        <div id="measurementChange">-3.5 cm</div>
+        <div id="avgMeasurement">-0.8 cm/week</div>
+        <div id="measurementProgress">Decreasing</div>
+        
+        <canvas id="measurementChart" width="400" height="200"></canvas>
+        
+        <table id="measurementEntriesTable">
+            <tbody>
+                <tr>
+                    <td>2025-08-23</td>
+                    <td>Waist</td>
+                    <td>75.5 cm</td>
+                    <td>cm</td>
+                    <td>-1.2</td>
+                    <td>Test note</td>
+                    <td>Actions</td>
+                </tr>
+                <tr>
+                    <td>2025-08-22</td>
+                    <td>Waist</td>
+                    <td>76.7 cm</td>
+                    <td>cm</td>
+                    <td>-0.5</td>
+                    <td>Another note</td>
+                    <td>Actions</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Mock API
+        window.API = {
+            measurements: {
+                getAll: () => Promise.resolve({
+                    json: () => Promise.resolve({
+                        entries: [
+                            { id: 1, date: '2025-08-23', measurementType: 'Waist', value: 75.5, unit: 'cm', note: 'Test note' },
+                            { id: 2, date: '2025-08-22', measurementType: 'Waist', value: 76.7, unit: 'cm', note: 'Another note' }
+                        ]
+                    })
+                }),
+                getByType: (type) => Promise.resolve({
+                    json: () => Promise.resolve({
+                        entries: [
+                            { id: 1, date: '2025-08-23', measurementType: type, value: 75.5, unit: 'cm', note: 'Test note' },
+                            { id: 2, date: '2025-08-22', measurementType: type, value: 76.7, unit: 'cm', note: 'Another note' }
+                        ]
+                    })
+                }),
+                getStats: (type) => Promise.resolve({
+                    json: () => Promise.resolve({
+                        totalEntries: 2,
+                        minValue: 75.5,
+                        maxValue: 76.7,
+                        avgChange: -0.8,
+                        latestChange: -1.2,
+                        overallChange: -3.5
+                    })
+                })
+            },
+            settings: {
+                get: () => Promise.resolve({
+                    json: () => Promise.resolve({
+                        unitSystem: 'metric',
+                        weight: 70
+                    })
+                })
+            }
+        };
+
+        // Load the modules
+        const loadScript = (src) => {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        };
+
+        async function loadModules() {
+            try {
+                await loadScript('/js/pages/measurements.js');
+                await loadScript('/js/modules/pdf-generator.js');
+                
+                console.log('Modules loaded successfully');
+                
+                // Test the functionality
+                document.getElementById('test-btn').addEventListener('click', async () => {
+                    try {
+                        console.log('Creating measurements manager...');
+                        const measurementsManager = new MeasurementsManager();
+                        await measurementsManager.init();
+                        
+                        console.log('Creating PDF generator...');
+                        const pdfGenerator = new PDFReportGenerator();
+                        pdfGenerator.measurementsManager = measurementsManager;
+                        
+                        console.log('Generating measurements PDF...');
+                        await pdfGenerator.generateMeasurementsPDF();
+                        
+                        console.log('PDF generation completed!');
+                    } catch (error) {
+                        console.error('Error during test:', error);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error loading modules:', error);
+            }
+        }
+
+        loadModules();
+    </script>
+</body>
+</html>

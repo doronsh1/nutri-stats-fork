@@ -344,4 +344,64 @@ h1 {
         padding: 3px 6px;
         font-size: 0.7rem;
     }
-} 
+} /* Do
+wnload Report Button Styling */
+#downloadDropdown.btn.btn-primary.dropdown-toggle {
+    border: none !important;
+    background-color: #1a73e8 !important;
+    color: rgb(0, 0, 0) !important;
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove hover effects */
+#downloadDropdown.btn.btn-primary.dropdown-toggle:hover {
+    background-color: #1a73e8 !important;
+    border-color: transparent !important;
+    color: rgb(0, 0, 0) !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Remove focus effects */
+#downloadDropdown.btn.btn-primary.dropdown-toggle:focus {
+    background-color: #1a73e8 !important;
+    border-color: transparent !important;
+    color: white !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+}
+
+/* Remove active effects */
+#downloadDropdown.btn.btn-primary.dropdown-toggle:active,
+#downloadDropdown.btn.btn-primary.dropdown-toggle.active {
+    background-color: #1a73e8 !important;
+    border-color: transparent !important;
+    color: white !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Remove Bootstrap's default button transitions and transforms */
+#downloadDropdown.btn.btn-primary.dropdown-toggle,
+#downloadDropdown.btn.btn-primary.dropdown-toggle:hover,
+#downloadDropdown.btn.btn-primary.dropdown-toggle:focus,
+#downloadDropdown.btn.btn-primary.dropdown-toggle:active {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+}
+
+/* Ensure dropdown arrow doesn't move */
+#downloadDropdown.btn.btn-primary.dropdown-toggle::after {
+    transition: none !important;
+    transform: none !important;
+}
