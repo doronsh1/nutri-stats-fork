@@ -153,7 +153,7 @@ function createMealSection(meal) {
                title="${meal.id === 1 ? 'Change this time to update all meals' : 'Change this meal time independently'}">
     `;
 
-    // Right side: copy/paste buttons
+    // Right side: copy/paste/clear buttons
     const rightGroup = document.createElement('div');
     rightGroup.className = 'd-flex align-items-center gap-2';
     rightGroup.innerHTML = `
@@ -169,6 +169,12 @@ function createMealSection(meal) {
                 title="Paste copied meal here"
                 disabled>
             <i class="bi bi-clipboard"></i> Paste
+        </button>
+        <button type="button" 
+                class="btn btn-outline-danger btn-sm clear-meal-btn" 
+                data-meal-id="${meal.id}"
+                title="Clear all food items from this meal">
+            <i class="bi bi-trash"></i> Clear
         </button>
     `;
 

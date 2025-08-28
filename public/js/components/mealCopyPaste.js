@@ -19,6 +19,12 @@ class MealCopyPaste {
                 const mealId = button.dataset.mealId;
                 this.pasteMeal(mealId);
             }
+            
+            if (e.target.closest('.clear-meal-btn')) {
+                const button = e.target.closest('.clear-meal-btn');
+                const mealId = button.dataset.mealId;
+                this.clearMealOnly(mealId);
+            }
         });
     }
 
@@ -358,6 +364,41 @@ class MealCopyPaste {
                 indicator.remove();
             }
         }, 3000);
+    }
+
+    async clearMealOnly(mealId) {
+        try {
+            const mealSection = document.querySelector(`[data-meal-id="${mealId}"]`);
+            if (!mealSection) {
+                console.error('Meal section not found');
+                return;
+            }
+
+            // Check if meal has items before clearing
+            if (!this.mealHasItems(mealSection)) {
+                this.showMessage(`Meal ${mealId} is already empty`, 'info');
+                return;
+            }
+
+            // Clear the meal
+            await this.clearMeal(mealSection);
+
+            // Update totals
+            const table = mealSection.querySelector('.meal-table');
+            updateTotals(table);
+
+            // Recalculate all totals
+            calculateMacroStats();
+
+            // Show success message
+            this.showMessage(`Meal ${mealId} cleared successfully`, 'success');
+
+            console.log('Meal cleared:', mealId);
+
+        } catch (error) {
+            console.error('Error clearing meal:', error);
+            this.showMessage('Error clearing meal', 'error');
+        }
     }
 
     // Get copied meal info (for debugging or UI display)

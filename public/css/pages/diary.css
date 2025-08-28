@@ -303,8 +303,8 @@ tfoot tr td {
         flex-direction: row;
     }
 }/
-* Copy/Paste button styling */
-.copy-meal-btn, .paste-meal-btn {
+* Copy/Paste/Clear button styling */
+.copy-meal-btn, .paste-meal-btn, .clear-meal-btn {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
@@ -327,6 +327,12 @@ tfoot tr td {
 .paste-meal-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.clear-meal-btn:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
 }
 
 /* Meal header improvements */
@@ -352,14 +358,14 @@ tfoot tr td {
     gap: 0.5rem;
 }
 
-/* Responsive adjustments for copy/paste buttons */
+/* Responsive adjustments for copy/paste/clear buttons */
 @media (max-width: 768px) {
-    .copy-meal-btn, .paste-meal-btn {
+    .copy-meal-btn, .paste-meal-btn, .clear-meal-btn {
         font-size: 0.7rem;
         padding: 0.2rem 0.4rem;
     }
     
-    .copy-meal-btn i, .paste-meal-btn i {
+    .copy-meal-btn i, .paste-meal-btn i, .clear-meal-btn i {
         font-size: 0.8rem;
     }
 }
