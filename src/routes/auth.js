@@ -1,6 +1,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const userService = require('../database/userService');
+const EmailService = require('../services/emailService');
 const { 
     hashPassword, 
     comparePassword, 
@@ -12,6 +13,12 @@ const {
 } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Initialize email service
+const emailService = new EmailService();
+
+// Validate email service configuration on startup
+emailService.validateConfiguration();
 
 // Input validation helpers
 function validateEmail(email) {
@@ -119,6 +126,26 @@ router.post('/register', async (req, res) => {
                 name: sanitizedName
             }
         });
+
+        // Send registration notification email asynchronously
+        // This happens after the response is sent to avoid blocking the registration
+        try {
+            emailService.sendRegistrationNotificationAsync({
+                userEmail: sanitizedEmail,
+                userName: sanitizedName,
+                registrationTime: userData.createdAt,
+                userId: userId
+            });
+        } catch (emailError) {
+            // Log email service errors without exposing them to the registration response
+            // Email failures should never affect registration completion
+            console.error('Email notification failed during registration:', {
+                error: emailError.message,
+                userEmail: sanitizedEmail,
+                userId: userId,
+                timestamp: new Date().toISOString()
+            });
+        }
 
     } catch (error) {
         console.error('Registration error:', error);

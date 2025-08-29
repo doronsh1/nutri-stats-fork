@@ -1,3 +1,6 @@
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
@@ -5,6 +8,9 @@ const session = require('express-session');
 
 // Database initialization (non-blocking)
 const { initializeDatabase, testConnection } = require('./src/database/init');
+
+// Email service initialization
+const EmailService = require('./src/services/emailService');
 
 // Initialize express app
 const app = express();
@@ -132,6 +138,11 @@ async function startServer() {
                 console.error('⚠️  Migration failed, but server will continue:', migrationError.message);
             }
         }
+
+        // Initialize and validate email service configuration
+        console.log('Initializing email service...');
+        const emailService = new EmailService();
+        emailService.validateConfiguration();
 
         // Get version from package.json
         const packageJson = require('./package.json');
