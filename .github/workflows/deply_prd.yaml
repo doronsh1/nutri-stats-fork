@@ -23,15 +23,15 @@ jobs:
       - name: 🏗️ Build project
         run: npm run build
 
-      - name: 📤 Deploy via WebDAV
+      - name: 📤 Upload `dist/` via WebDAV
         run: |
-          apt-get update
-          apt-get install -y cadaver
-
+          sudo apt-get update
+          sudo apt-get install -y cadaver
+      
           echo "open ${{ secrets.WEBDAV_URL }}
-          user ${{ secrets.CPANEL_USER }}
-          ${{ secrets.CPANEL_PASS }}
-          mput -r build/*
+          user ${{ secrets.WEBDAV_USERNAME }}
+          ${{ secrets.WEBDAV_PASSWORD }}
+          mput -r dist/*
           bye" > deploy.script
-
-          cadaver < deploy.script 
+      
+          cadaver < deploy.script
