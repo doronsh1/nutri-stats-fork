@@ -35,7 +35,7 @@ jobs:
       
           cd dist
       
-          echo "open ${{ secrets.WEBDAV_URL }}
+          echo "open ${{ secrets.WEBDAV_URL }}/public_html/nutri-stats/
           user ${{ secrets.WEBDAV_USERNAME }}
           ${{ secrets.WEBDAV_PASSWORD }}
           mput -r *
