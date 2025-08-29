@@ -224,7 +224,7 @@ class MeasurementsManager {
         const unit = this.defaultUnit;
 
         if (currentElement) {
-            currentElement.textContent = stats.totalEntries > 0 ? `${stats.maxValue} ${unit}` : '-';
+            currentElement.textContent = stats.totalEntries > 0 ? `${stats.latestValue} ${unit}` : '-';
         }
 
         if (latestChangeElement) {

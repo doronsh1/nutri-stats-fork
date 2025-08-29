@@ -58,6 +58,7 @@ router.get('/stats/:measurementType', authenticateToken, async (req, res) => {
                 totalEntries: 0,
                 minValue: 0,
                 maxValue: 0,
+                latestValue: 0,
                 avgValue: 0,
                 firstEntryDate: null,
                 lastEntryDate: null,

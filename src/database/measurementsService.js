@@ -250,7 +250,7 @@ class MeasurementsService {
             if (result.rows.length > 0) {
                 const stats = result.rows[0];
                 
-                // Get latest change, overall change, and average change
+                // Get latest measurement value and calculate changes
                 const changeResult = await query(`
                     SELECT 
                         curr.value as current_value,
@@ -261,6 +261,12 @@ class MeasurementsService {
                         prev.user_id = curr.user_id 
                         AND prev.measurement_type = curr.measurement_type
                         AND prev.date < curr.date
+                        AND prev.date = (
+                            SELECT MAX(date) FROM user_measurements p2
+                            WHERE p2.user_id = curr.user_id 
+                            AND p2.measurement_type = curr.measurement_type
+                            AND p2.date < curr.date
+                        )
                     )
                     LEFT JOIN user_measurements first_entry ON (
                         first_entry.user_id = curr.user_id 
@@ -271,7 +277,10 @@ class MeasurementsService {
                         )
                     )
                     WHERE curr.user_id = ? AND curr.measurement_type = ?
-                    ORDER BY curr.date DESC, prev.date DESC
+                    AND curr.date = (
+                        SELECT MAX(date) FROM user_measurements 
+                        WHERE user_id = curr.user_id AND measurement_type = curr.measurement_type
+                    )
                     LIMIT 1
                 `, [userId, measurementType]);
 
@@ -316,10 +325,17 @@ class MeasurementsService {
                     avgChange = avgChangeResult.rows[0].avg_change;
                 }
 
+                // Get the latest measurement value
+                let latestValue = 0;
+                if (changeResult.rows.length > 0) {
+                    latestValue = changeResult.rows[0].current_value;
+                }
+
                 return {
                     totalEntries: stats.total_entries,
                     minValue: stats.min_value,
                     maxValue: stats.max_value,
+                    latestValue: latestValue,
                     avgChange: parseFloat(avgChange.toFixed(2)) || 0,
                     firstEntryDate: stats.first_entry_date,
                     lastEntryDate: stats.last_entry_date,
