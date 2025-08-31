@@ -35,8 +35,10 @@ jobs:
       
           cd dist
       
-          echo "open ${{ secrets.WEBDAV_URL }}/public_html/nutri-stats/
-          user ${{ secrets.WEBDAV_USERNAME }}
+          #echo "open ${{ secrets.WEBDAV_URL }}/public_html/nutri-stats/
+          # user ${{ secrets.WEBDAV_USERNAME }}
+          echo "open webdavs://baseecli.com:2078/
+          user deploy@baseecli.com
           ${{ secrets.WEBDAV_PASSWORD }}
           mput -r *
           bye" > ../deploy.script
