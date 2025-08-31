@@ -27,7 +27,6 @@ jobs:
         run: |
           echo "Listing dist directory:"
           ls -l dist
-    
       - name: 📤 Upload `dist/` via WebDAV
         run: |
           sudo apt-get update
@@ -35,15 +34,33 @@ jobs:
       
           cd dist
       
-          #echo "open ${{ secrets.WEBDAV_URL }}/public_html/nutri-stats/
-          # user ${{ secrets.WEBDAV_USERNAME }}
-          echo "open webdavs://baseecli.com:2078/
-          user deploy@baseecli.com
-          ${{ secrets.WEBDAV_PASSWORD }}
-          mput -r *
-          bye" > ../deploy.script
+          cat <<EOF > ../deploy.script
+            open https://baseecli.com:2078/
+            user deploy@baseecli.com
+            ${{ secrets.WEBDAV_PASSWORD }}
+            mput -r *
+            bye
+            EOF
+            
+                cd ..
+                cadaver -v < deploy.script
+                
+      # - name: 📤 Upload `dist/` via WebDAV
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y cadaver
       
-          cd ..
+      #     cd dist
+      
+      #     #echo "open ${{ secrets.WEBDAV_URL }}/public_html/nutri-stats/
+      #     # user ${{ secrets.WEBDAV_USERNAME }}
+      #     echo "open webdavs://baseecli.com:2078/
+      #     user deploy@baseecli.com
+      #     ${{ secrets.WEBDAV_PASSWORD }}
+      #     mput -r *
+      #     bye" > ../deploy.script
+      
+      #     cd ..
           cadaver < deploy.script
 
     
