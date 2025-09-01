@@ -39,35 +39,36 @@ jobs:
       #     cadaver "https://${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}@baseecli.com:2078/" <<EOF
       #     mput -r *
       #     bye
-      #     EOF
+      # #     EOF
 
-      # - name: 📤 Upload dist via WebDAV using curl
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y curl
-      
-      #     cd dist
-      
-      #     for file in $(find . -type f); do
-      #       echo "Uploading $file..."
-      #       curl -T "$file" --user "${{ secrets.WEBDAV_USERNAME }}:${{ secrets.WEBDAV_PASSWORD }}" \
-      #         "https://baseecli.com:2078/${file}"
-      #     done
-      - name: 📤 Upload dist via WebDAV
+      - name: 📤 Upload dist via WebDAV using curl
         run: |
           sudo apt-get update
-          sudo apt-get install -y cadaver
+          sudo apt-get install -y curl
       
           cd dist
       
-          echo "open https://baseecli.com:2078/" > ../deploy.script
-          echo "deploy@baseecli.com" >> ../deploy.script
-          echo "${{ secrets.CPANEL_PASS }}" >> ../deploy.script
-          echo "mput -r *" >> ../deploy.script
-          echo "bye" >> ../deploy.script
+          for file in $(find . -type f); do
+            echo "Uploading $file..."
+            curl -T "$file" --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}" \
+              "https://baseecli.com:2078/${file}"
+          done
+          
+      # - name: 📤 Upload dist via WebDAV
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y cadaver
       
-          cd ..
-          cadaver < deploy.script
+      #     cd dist
+      
+      #     echo "open https://baseecli.com:2078/" > ../deploy.script
+      #     echo "deploy@baseecli.com" >> ../deploy.script
+      #     echo "${{ secrets.CPANEL_PASS }}" >> ../deploy.script
+      #     echo "mput -r *" >> ../deploy.script
+      #     echo "bye" >> ../deploy.script
+      
+      #     cd ..
+      #     cadaver < deploy.script
                 
       # - name: 📤 Upload `dist/` via WebDAV
       #   run: |
