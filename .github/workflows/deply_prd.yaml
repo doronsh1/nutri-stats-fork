@@ -27,29 +27,32 @@ jobs:
         run: |
           echo "Listing dist directory:"
           ls -l dist
-      - name: 📤 Upload dist via WebDAV using webdav
+          
+      - name: 📤 Upload dist via WebDAV using curl
         run: |
-          USER="${{ secrets.CPANEL_USER }}"
-          PASS="${{ secrets.CPANEL_PASS }}"
-          npm install webdav-cli
-          npx webdav-cli upload dist/ https://baseecli.com:2078/ \
-            --username "${{ secrets.CPANEL_USER }}" \
-            --password "${{ secrets.CPANEL_PASS }}"
-          # webdav upload dist/ https://baseecli.com:2078/ --username "$USER" --password "$PASS"
+          sudo apt-get update
+          sudo apt-get install -y curl
       
-      # - name: 📤 Upload dist via WebDAV
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y cadaver
+          cd dist
       
-      #     cd dist
+          # Create directories first
+          find . -type d | while read dir; do
+            remote_path="https://baseecli.com:2078/${dir#./}"
+            echo "📁 Creating directory: $remote_path"
+            curl --silent --fail -X MKCOL \
+              --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}" \
+              "$remote_path" || true  # Ignore if already exists
+          done
       
-      #     # Launch cadaver with inline URL and credentials
-      #     cadaver open "https://${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}@baseecli.com:2078/nutri-stats/" <<EOF
-      #     mput -r *
-      #     bye
-      #     EOF
-       
+            # Upload files
+          find . -type f | while read file; do
+            remote_path="https://baseecli.com:2078/${file#./}"
+            echo "📤 Uploading file: $remote_path"
+            curl --fail -T "$file" \
+              --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}" \
+              "$remote_path"
+          done
+    
       # - name: 📤 Upload dist via WebDAV using curl
       #   run: |
       #     sudo apt-get update
