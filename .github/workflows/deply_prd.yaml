@@ -27,7 +27,13 @@ jobs:
         run: |
           echo "Listing dist directory:"
           ls -l dist
-          
+      - name: 📤 Upload dist via WebDAV using webdav
+        run: |
+          USER=${{ secrets.CPANEL_USER }}
+          PASS=${{ secrets.CPANEL_PASS }}
+          npm install -g webdav-cli
+          webdav upload dist/ https://baseecli.com:2078/ --username "$USER" --password "$PASS"
+      
       # - name: 📤 Upload dist via WebDAV
       #   run: |
       #     sudo apt-get update
@@ -40,19 +46,19 @@ jobs:
       #     mput -r *
       #     bye
       #     EOF
-
-      - name: 📤 Upload dist via WebDAV using curl
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl
+       
+      # - name: 📤 Upload dist via WebDAV using curl
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y curl
       
-          cd dist
+      #     cd dist
       
-          for file in $(find . -type f); do
-            echo "Uploading $file..."
-            curl -T "$file" --user '${{ secrets.CPANEL_USER }}':'${{ secrets.CPANEL_PASS }}' \
-              "https://baseecli.com:2078/${file}"
-          done
+      #     for file in $(find . -type f); do
+      #       echo "Uploading $file..."
+      #       curl -T "$file" --user '${{ secrets.CPANEL_USER }}':'${{ secrets.CPANEL_PASS }}' \
+      #         "https://baseecli.com:2078/${file}"
+      #     done
           
       # - name: 📤 Upload dist via WebDAV
       #   run: |
