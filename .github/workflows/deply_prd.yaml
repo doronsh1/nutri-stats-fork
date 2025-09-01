@@ -29,8 +29,8 @@ jobs:
           ls -l dist
       - name: 📤 Upload dist via WebDAV using webdav
         run: |
-          USER=${{ secrets.CPANEL_USER }}
-          PASS=${{ secrets.CPANEL_PASS }}
+          USER="${{ secrets.CPANEL_USER }}"
+          PASS="${{ secrets.CPANEL_PASS }}"
           npm install -g webdav-cli
           webdav upload dist/ https://baseecli.com:2078/ --username "$USER" --password "$PASS"
       
