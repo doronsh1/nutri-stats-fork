@@ -43,7 +43,7 @@ jobs:
           echo "bye" >> ../deploy.script
       
           cd ..
-          cadaver -v < deploy.script
+          cadaver < deploy.script
                 
       # - name: 📤 Upload `dist/` via WebDAV
       #   run: |
