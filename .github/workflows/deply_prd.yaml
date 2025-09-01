@@ -35,14 +35,12 @@ jobs:
       
           cd dist
       
-          cat <<EOF > ../deploy.script
-            open https://baseecli.com:2078/ 
-            user deploy@baseecli.com
-            ${{ secrets.WEBDAV_PASSWORD }}
-            mput -r *
-            bye
-            EOF
-
+          echo "open https://baseecli.com:2078/" > ../deploy.script
+          echo "user deploy@baseecli.com" >> ../deploy.script
+          echo "${{ secrets.WEBDAV_PASSWORD }}" >> ../deploy.script
+          echo "mput -r *" >> ../deploy.script
+          echo "bye" >> ../deploy.script
+      
           cd ..
           cadaver -v < deploy.script
                 
