@@ -28,31 +28,31 @@ jobs:
           echo "Listing dist directory:"
           ls -l dist
           
-      - name: 📤 Upload dist via WebDAV
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cadaver
-      
-          cd dist
-      
-          # Launch cadaver with inline URL and credentials
-          cadaver open "https://${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}@baseecli.com:2078/nutri-stats/" <<EOF
-          mput -r *
-          bye
-          EOF
-
-      # - name: 📤 Upload dist via WebDAV using curl
+      # - name: 📤 Upload dist via WebDAV
       #   run: |
       #     sudo apt-get update
-      #     sudo apt-get install -y curl
+      #     sudo apt-get install -y cadaver
       
       #     cd dist
       
-      #     for file in $(find . -type f); do
-      #       echo "Uploading $file..."
-      #       curl -T "$file" --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}" \
-      #         "https://baseecli.com:2078/nutri-stats/${file}"
-      #     done
+      #     # Launch cadaver with inline URL and credentials
+      #     cadaver open "https://${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}@baseecli.com:2078/nutri-stats/" <<EOF
+      #     mput -r *
+      #     bye
+      #     EOF
+
+      - name: 📤 Upload dist via WebDAV using curl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
+      
+          cd dist
+      
+          for file in $(find . -type f); do
+            echo "Uploading $file..."
+            curl -T "$file" --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}" \
+              "https://baseecli.com:2078/nutri-stats/${file}"
+          done
           
       # - name: 📤 Upload dist via WebDAV
       #   run: |
