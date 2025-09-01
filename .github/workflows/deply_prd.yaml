@@ -36,7 +36,7 @@ jobs:
           cd dist
       
           # Launch cadaver with inline URL and credentials
-          cadaver "https://${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}@baseecli.com:2078/nutri-stats/" <<EOF
+          cadaver open "https://${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}@baseecli.com:2078/nutri-stats/" <<EOF
           mput -r *
           bye
           EOF
