@@ -61,6 +61,6 @@ jobs:
       #     bye" > ../deploy.script
       
       #     cd ..
-          cadaver < deploy.script
+      #    cadaver < deploy.script
 
     
