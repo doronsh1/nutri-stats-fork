@@ -31,8 +31,11 @@ jobs:
         run: |
           USER="${{ secrets.CPANEL_USER }}"
           PASS="${{ secrets.CPANEL_PASS }}"
-          npm install -g webdav-cli
-          webdav upload dist/ https://baseecli.com:2078/ --username "$USER" --password "$PASS"
+          npm install webdav-cli
+          npx webdav-cli upload dist/ https://baseecli.com:2078/ \
+            --username "${{ secrets.CPANEL_USER }}" \
+            --password "${{ secrets.CPANEL_PASS }}"
+          # webdav upload dist/ https://baseecli.com:2078/ --username "$USER" --password "$PASS"
       
       # - name: 📤 Upload dist via WebDAV
       #   run: |
