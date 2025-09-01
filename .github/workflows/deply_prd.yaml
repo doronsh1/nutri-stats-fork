@@ -50,8 +50,8 @@ jobs:
       
           for file in $(find . -type f); do
             echo "Uploading $file..."
-            curl -T "$file" --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASS }}" \
-              "https://baseecli.com:2078/nutri-stats/${file}"
+            curl -T "$file" --user '${{ secrets.CPANEL_USER }}':'${{ secrets.CPANEL_PASS }}' \
+              "https://baseecli.com:2078/${file}"
           done
           
       # - name: 📤 Upload dist via WebDAV
